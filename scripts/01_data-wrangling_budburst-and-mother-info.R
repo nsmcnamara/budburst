@@ -58,3 +58,15 @@ budburst_drop_na %>%
 ### total acorns planted: 1143
 ### total acorns measured: 793
 ### total acorns dropped: 350
+
+
+## make a new DF: Date of First Stage 2
+## if not measured, make linear interpolation between the two neighbouring measurements
+
+### find all for which stage 2 was measured
+direct_first_stage_2 <- budburst_drop_na %>%
+  filter(budburst_score == 2) %>%
+  group_by(acorn_id) %>%
+  slice_max(day_of_year) %>%
+  mutate(doy_stage_2 = day_of_year)
+### 639 observations
