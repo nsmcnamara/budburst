@@ -88,3 +88,19 @@ stage_2_post <- stage_2_missed %>%
   rename(day_of_year_post_2 = day_of_year) %>%
   select(acorn_id, day_of_year_post_2, budburst_score_post_2)
 ### 141 observations
+
+### select last observation for each acorn.id before stage 2
+stage_2_pre <- stage_2_missed %>%
+  group_by(acorn_id) %>%
+  filter(budburst_score <= 2) %>%
+  slice_max(day_of_year) %>%
+  rename(budburst_score_pre_2 = budburst_score) %>%
+  rename(day_of_year_pre_2 = day_of_year)
+### 154 observations, 
+
+### check why 13 have pre but not post
+stage_2_pre %>%
+  filter(!acorn_id %in% stage_2_post$acorn_id)
+### 11 dead, 1 missing, 1 stuck on budburst score 1 --> ok
+
+
