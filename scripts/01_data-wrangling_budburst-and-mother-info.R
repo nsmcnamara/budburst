@@ -37,3 +37,10 @@ mother_info %>%
 budburst <- budburst %>%
   mutate(date = as.Date(date, format = "%d.%m.%y")) %>%
   mutate(day_of_year = lubridate::yday(date))
+
+
+## add mother_id column for joining data frames
+budburst <- budburst %>%
+  mutate(mother_id = case_when(str_detect(acorn_id, "K") ~ str_sub(acorn_id, 3, str_length(acorn_id)),
+                               TRUE ~ acorn_id)) %>%
+  mutate(mother_id = str_sub(mother_id, 1, -3))
