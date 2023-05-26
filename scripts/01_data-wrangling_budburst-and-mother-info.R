@@ -78,3 +78,13 @@ stage_2_missed <- budburst_drop_na %>%
 nrow(distinct(stage_2_missed, acorn_id))
 ### 154
 ### sanity check: 154 + 639 = 793, ie all measurements accounted for
+
+### find first observation after stage 2 was reached
+stage_2_post <- stage_2_missed %>%
+  group_by(acorn_id) %>%
+  filter(budburst_score >= 2) %>%
+  slice_min(day_of_year) %>%
+  rename(budburst_score_post_2 = budburst_score) %>%
+  rename(day_of_year_post_2 = day_of_year) %>%
+  select(acorn_id, day_of_year_post_2, budburst_score_post_2)
+### 141 observations
