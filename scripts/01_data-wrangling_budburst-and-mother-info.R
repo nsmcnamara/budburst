@@ -103,4 +103,13 @@ stage_2_pre %>%
   filter(!acorn_id %in% stage_2_post$acorn_id)
 ### 11 dead, 1 missing, 1 stuck on budburst score 1 --> ok
 
+### combine dfs
+stage_2_missed_combined <- inner_join(stage_2_pre, stage_2_post, by = "acorn_id", keep = FALSE)
 
+### linear interpolation of stage 2
+stage_2_interpolated <- stage_2_missed_combined %>%
+  mutate(difference_days = day_of_year_post_2 - day_of_year_pre_2) %>%
+  mutate(difference_budburst_score = budburst_score_post_2 - budburst_score_pre_2) %>%
+  mutate(days_per_score_step = difference_days/difference_budburst_score) %>%
+  mutate(amount_steps = 2 - budburst_score_pre_2) %>%
+  mutate(day_of_year_2 = day_of_year_pre_2 + (amount_steps * days_per_score_step))
