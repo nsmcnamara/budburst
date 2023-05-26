@@ -31,6 +31,9 @@ mother_info %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
 
-### Transforming the data
-### Budburst
-
+#### Transforming the data ####
+# Budburst
+## make new column with date as day of year
+budburst <- budburst %>%
+  mutate(date = as.Date(date, format = "%d.%m.%y")) %>%
+  mutate(day_of_year = lubridate::yday(date))
