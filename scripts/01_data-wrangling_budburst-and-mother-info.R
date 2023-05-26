@@ -70,3 +70,11 @@ direct_first_stage_2 <- budburst_drop_na %>%
   slice_max(day_of_year) %>%
   mutate(doy_stage_2 = day_of_year)
 ### 639 observations
+
+### for those who went directly to stage 3, 4 or 5, make linear interpolation
+### filter those for which stage 2 was not measured
+stage_2_missed <- budburst_drop_na %>%
+  filter(!acorn_id %in% direct_first_stage_2$acorn_id)
+nrow(distinct(stage_2_missed, acorn_id))
+### 154
+### sanity check: 154 + 639 = 793, ie all measurements accounted for
