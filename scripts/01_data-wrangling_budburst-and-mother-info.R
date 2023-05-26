@@ -8,6 +8,7 @@
 # libraries
 library(tidyverse)
 
+
 #### Data Import ####
 ### Importing budburst scoring
 budburst <- read.csv("~/budburst/data/processed/20230526_budburst-zurich_corrected.csv", stringsAsFactors=TRUE)
@@ -17,16 +18,19 @@ mother_info <- read.csv("~/budburst/data/processed/20230526_mother-info_correcte
 
 # Budburst
 ## Checking out the data
-str(budburst)
 glimpse(budburst)
-
 ## Checking NAs
 budburst %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
+# Mother Info
+## Checking out the data
+glimpse(mother_info)  
+## Checking NAs
+mother_info %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
 
-  
-  
+
 ### Transforming the data
 ### Budburst
 
