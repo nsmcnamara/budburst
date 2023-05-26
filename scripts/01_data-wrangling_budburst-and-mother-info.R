@@ -44,3 +44,17 @@ budburst <- budburst %>%
   mutate(mother_id = case_when(str_detect(acorn_id, "K") ~ str_sub(acorn_id, 3, str_length(acorn_id)),
                                TRUE ~ acorn_id)) %>%
   mutate(mother_id = str_sub(mother_id, 1, -3))
+
+
+## Drop NAs
+budburst_drop_na <- budburst %>%
+  drop_na(budburst_score)
+
+### check how many acorns were dropped
+budburst %>%
+  summarise(n_distinct(acorn_id))
+budburst_drop_na %>%
+  summarise(n_distinct(acorn_id))
+### total acorns planted: 1143
+### total acorns measured: 793
+### total acorns dropped: 350
