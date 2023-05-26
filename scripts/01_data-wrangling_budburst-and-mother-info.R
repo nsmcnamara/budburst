@@ -112,4 +112,15 @@ stage_2_interpolated <- stage_2_missed_combined %>%
   mutate(difference_budburst_score = budburst_score_post_2 - budburst_score_pre_2) %>%
   mutate(days_per_score_step = difference_days/difference_budburst_score) %>%
   mutate(amount_steps = 2 - budburst_score_pre_2) %>%
-  mutate(day_of_year_2 = day_of_year_pre_2 + (amount_steps * days_per_score_step))
+  mutate(doy_stage_2 = day_of_year_pre_2 + (amount_steps * days_per_score_step))
+
+### combine calculated and interpolated stage 2 df
+stage_2_all <- rbind(direct_first_stage_2, stage_2_interpolated)
+### 780 in total
+### sanity check: 639 + 141 = 780 --> ok
+
+### clean up df
+stage_2 <- stage_2_all %>%
+  select(planting_location, acorn_id, mother_id, doy_stage_2)
+### checking NAs
+which(is.na(stage_2))
