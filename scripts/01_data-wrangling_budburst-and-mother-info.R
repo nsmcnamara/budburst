@@ -38,13 +38,11 @@ budburst <- budburst %>%
   mutate(date = as.Date(date, format = "%d.%m.%y")) %>%
   mutate(day_of_year = lubridate::yday(date))
 
-
 ## add mother_id column for joining data frames
 budburst <- budburst %>%
   mutate(mother_id = case_when(str_detect(acorn_id, "K") ~ str_sub(acorn_id, 3, str_length(acorn_id)),
                                TRUE ~ acorn_id)) %>%
   mutate(mother_id = str_sub(mother_id, 1, -3))
-
 
 ## Drop NAs
 budburst_drop_na <- budburst %>%
@@ -59,7 +57,7 @@ budburst_drop_na %>%
 ### total acorns measured: 793
 ### total acorns dropped: 350
 
-
+#### DF for Stage 2 ####
 ## make a new DF: Date of First Stage 2
 ## if not measured, make linear interpolation between the two neighbouring measurements
 
@@ -124,3 +122,19 @@ stage_2 <- stage_2_all %>%
   select(planting_location, acorn_id, mother_id, doy_stage_2)
 ### checking NAs
 which(is.na(stage_2))
+
+
+### combine stage 2 and mother info
+stage_2_for_analysis <- left_join(stage_2, mother_info, by = "mother_id")
+### no mother info found (these arrived late and must be excluded from analysis)
+stage_2_for_analysis <- stage_2_for_analysis %>%
+  drop_na(species)
+### total: 756 acorns for analysis
+
+### add column about age
+stage_2_for_analysis <- stage_2_for_analysis %>%
+  mutate(age = case_when(str_detect(acorn_id, "K") ~ 3, TRUE ~ 2))
+
+
+### export DF for stage 2
+write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.csv")
