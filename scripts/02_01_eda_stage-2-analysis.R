@@ -48,10 +48,12 @@ ggplot(stage_2_for_analysis, aes(x = species, y = doy_stage_2,
     width = .12,
     show.legend = FALSE
   ) +
-  ggdist::geom_dotsinterval(
-    side = "left",
-    scale = 2
-  )+
+#  ggdist::geom_dotsinterval(
+#    side = "left",
+#    scale = 2,
+#    dotsize = 0.5,
+#    show.legend = FALSE
+#  ) +
 #  ggdist::stat_dots(
 #    side = "left",
 #    justification = 1.1,
