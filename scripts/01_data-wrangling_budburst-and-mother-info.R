@@ -138,3 +138,16 @@ stage_2_for_analysis <- stage_2_for_analysis %>%
 
 ### export DF for stage 2
 write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.csv")
+
+
+#### Meteorological Data ####
+### Import meteorological data for Zurich Site 
+zurich_weather_jan_till_may_2023 <- read.csv("~/budburst/data/raw/meteo_UIF_2023-05-31.csv", stringsAsFactors=TRUE)
+
+### check out data
+glimpse(zurich_weather_jan_till_may_2023)
+## Checking NAs
+zurich_weather_jan_till_may_2023 %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+
+
