@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Stage 2 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-05-26
+### Last update:  2023-05-31
 ### Simone McNamara
 
 #### Setup ####
