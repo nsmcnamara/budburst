@@ -57,6 +57,32 @@ budburst_drop_na %>%
 ### total acorns measured: 793
 ### total acorns dropped: 350
 
+#### Meteorological Data ####
+### Import meteorological data for Zurich Site 
+zurich_weather_jan_till_may_2023 <- read.csv("~/budburst/data/raw/meteo_UIF_2023-05-31.csv", stringsAsFactors=TRUE)
+
+### check out data
+glimpse(zurich_weather_jan_till_may_2023)
+## Checking NAs
+zurich_weather_jan_till_may_2023 %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+
+### Data wrangling
+## change date to DOY
+zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+  mutate(date = as.character(MESSDAT)) %>%
+  mutate(date = clock::date_time_parse_RFC_3339(date)) %>%
+  mutate(day_of_year = lubridate::yday(date))
+
+## calculate temp above 5 degrees per day
+zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+  mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0))
+
+## cumulative temp
+zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+  mutate(cum_temp_above_5 = cumsum(mean_temp_above_5))
+
+
 #### DF for Stage 2 ####
 ## make a new DF: Date of First Stage 2
 ## if not measured, make linear interpolation between the two neighbouring measurements
@@ -136,31 +162,12 @@ stage_2_for_analysis <- stage_2_for_analysis %>%
   mutate(age = case_when(str_detect(acorn_id, "K") ~ 3, TRUE ~ 2))
 
 
+
 ### export DF for stage 2
 write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.csv")
 
 
-#### Meteorological Data ####
-### Import meteorological data for Zurich Site 
-zurich_weather_jan_till_may_2023 <- read.csv("~/budburst/data/raw/meteo_UIF_2023-05-31.csv", stringsAsFactors=TRUE)
 
-### check out data
-glimpse(zurich_weather_jan_till_may_2023)
-## Checking NAs
-zurich_weather_jan_till_may_2023 %>%
-  summarise(across(everything(), ~ sum(is.na(.))))
 
-### Data wrangling
-## change date to DOY
-zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
-  mutate(date = as.character(MESSDAT)) %>%
-  mutate(date = clock::date_time_parse_RFC_3339(date)) %>%
-  mutate(day_of_year = lubridate::yday(date))
 
-## calculate temp above 5 degrees per day
-zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
-  mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0))
-
-## cumulative temp
-zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
-  mutate(cum_temp_above_5 = cumsum(mean_temp_above_5))
+##
