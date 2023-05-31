@@ -151,23 +151,25 @@ which(is.na(stage_2))
 
 
 ### combine stage 2 and mother info
-stage_2_for_analysis <- left_join(stage_2, mother_info, by = "mother_id")
+stage_2_combined_mother <- left_join(stage_2, mother_info, by = "mother_id")
 ### no mother info found (these arrived late and must be excluded from analysis)
-stage_2_for_analysis <- stage_2_for_analysis %>%
+stage_2_combined_mother <- stage_2_combined_mother %>%
   drop_na(species)
 ### total: 756 acorns for analysis
 
 ### add column about age
-stage_2_for_analysis <- stage_2_for_analysis %>%
+stage_2_combined_mother <- stage_2_combined_mother %>%
   mutate(age = case_when(str_detect(acorn_id, "K") ~ 3, TRUE ~ 2))
 
+### add cumulative temperature
+stage_2_combined_mother <-  stage_2_combined_mother %>%
+  mutate(day_of_year = round(doy_stage_2))
 
+stage_2_combined_mother_weather <- left_join(stage_2_combined_mother, zurich_weather_jan_till_may_2023, by = "day_of_year")
+
+## drop not relevant columns
+stage_2_for_analysis <- stage_2_combined_mother_weather %>%
+  select(-c(17:26))
 
 ### export DF for stage 2
 write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.csv")
-
-
-
-
-
-##
