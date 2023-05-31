@@ -24,18 +24,22 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
 ### Histogram by species
 ggplot(stage_2_for_analysis,
-       mapping = aes(doy_stage_2, ..density.., fill = species, alpha = 0.5)) +
-  geom_histogram() +
-  geom_density() +
-  facet_wrap( ~species)
+       mapping = aes(cum_temp_above_5, ..density.., fill = species, alpha = 0.5)) +
+  geom_histogram(bins = 12) +
+#  geom_density() +
+  facet_wrap( ~species, ncol = 1)
+
+### QQ Plot
+qqnorm(stage_2_for_analysis$cum_temp_above_5)
+qqline(stage_2_for_analysis$cum_temp_above_5)
 
 ### Automatic EDA by ggally
 stage_2_for_analysis %>%
-  select(doy_stage_2, species, altitude, latitude, longitude, age) %>%
+  select(cum_temp_above_5, species, altitude, latitude, longitude, age) %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
 
 ## make a raincloudplot of doy by species
-ggplot(stage_2_for_analysis, aes(x = species, y = doy_stage_2, 
+ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5, 
                                  colour = species, fill = species, alpha = 0.5)) +
   ggdist::stat_halfeye(
     adjust = 0.5,
@@ -48,12 +52,7 @@ ggplot(stage_2_for_analysis, aes(x = species, y = doy_stage_2,
     width = .12,
     show.legend = FALSE
   ) +
-#  ggdist::geom_dotsinterval(
-#    side = "left",
-#    scale = 2,
-#    dotsize = 0.5,
-#    show.legend = FALSE
-#  ) +
+
 #  ggdist::stat_dots(
 #    side = "left",
 #    justification = 1.1,
@@ -63,17 +62,9 @@ ggplot(stage_2_for_analysis, aes(x = species, y = doy_stage_2,
 #    scale = 2/10,
 #    show.legend = FALSE
 #  ) +
-#  geom_point(
-#    size = 0.3,
-#    position = position_jitterdodge(
-#      seed = 1,
-#      jitter.width = 0.3,
-#      jitter.height = 0.3,
-#      dodge.width = 0.5
-#    )
-#  ) +
+
   coord_cartesian(xlim = c(1.2, NA)) +
-  scale_y_continuous(breaks = seq(100, 150, 10)) +
+#  scale_y_continuous(breaks = seq(100, 150, 10)) +
   theme_bw() +
   labs(x = "Species",
        y = "DOY of Stage 2",
