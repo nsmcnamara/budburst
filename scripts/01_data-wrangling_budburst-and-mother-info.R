@@ -150,4 +150,14 @@ glimpse(zurich_weather_jan_till_may_2023)
 zurich_weather_jan_till_may_2023 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
+### Data wrangling
+## change date to DOY
+zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+  mutate(date = as.character(MESSDAT)) %>%
+  mutate(date = clock::date_time_parse_RFC_3339(date)) %>%
+  mutate(day_of_year = lubridate::yday(date))
+
+## calculate temp above 5 degrees per day
+
+
 
