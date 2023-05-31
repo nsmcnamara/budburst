@@ -158,6 +158,9 @@ zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
   mutate(day_of_year = lubridate::yday(date))
 
 ## calculate temp above 5 degrees per day
+zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+  mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0))
 
-
-
+## cumulative temp
+zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+  mutate(cum_temp_above_5 = cumsum(mean_temp_above_5))
