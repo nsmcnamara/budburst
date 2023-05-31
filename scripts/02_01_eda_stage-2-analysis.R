@@ -38,7 +38,8 @@ stage_2_for_analysis %>%
   select(cum_temp_above_5, species, altitude, latitude, longitude, age) %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
 
-## make a raincloudplot of doy by species
+### Growing Degree Days by Species
+## make a raincloudplot of gdd by species
 ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5, 
                                  colour = species, fill = species, alpha = 0.5)) +
   ggdist::stat_halfeye(
@@ -52,20 +53,18 @@ ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5,
     width = .12,
     show.legend = FALSE
   ) +
-
-#  ggdist::stat_dots(
-#    side = "left",
-#    justification = 1.1,
-#    position = position_dodge(),
-#    binwidth = 7,
-#    dotsize = 0.5,
-#    scale = 2/10,
-#    show.legend = FALSE
-#  ) +
-
+  ggdist::stat_dots(
+    position = "dodge",
+    scale = 0.5,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    show.legend = FALSE
+  ) +
   coord_cartesian(xlim = c(1.2, NA)) +
-#  scale_y_continuous(breaks = seq(100, 150, 10)) +
+  scale_y_continuous(breaks = seq(100, 400, 50)) +
   theme_bw() +
+  theme(legend.position = c(0.9, 0.9)) +
   labs(x = "Species",
        y = "Growing Degree Days",
        colour = "Species") +
@@ -73,10 +72,11 @@ ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5,
   labs(fill = "Species", colour = "Species")
 
 
+### Growing Degree Days for Q. Robur by Site
 ## make a plot of doy by site_name
 q_robur <- filter(stage_2_for_analysis, species == "Q.robur")
 
-ggplot(q_robur, aes(x = species, y = cum_temp_above_5, 
+ggplot(q_robur, aes(x = site_name, y = cum_temp_above_5, 
                                  colour = site_name, fill = site_name, alpha = 0.5)) +
   ggdist::stat_halfeye(
     adjust = 0.5,
@@ -89,26 +89,22 @@ ggplot(q_robur, aes(x = species, y = cum_temp_above_5,
     width = .12,
     show.legend = FALSE
   ) +
-
-#  ggdist::stat_dots(
-#    side = "left",
-#    justification = 1.1,
-#    position = position_dodge(),
-#    binwidth = 7,
-#    dotsize = 0.5,
-#    scale = 2/10,
-#    show.legend = FALSE
-#  ) +
+  ggdist::stat_dots(
+    position = "dodge",
+    scale = 0.5,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    show.legend = FALSE
+  ) +
 
   coord_cartesian(xlim = c(1.2, NA)) +
 #  scale_y_continuous(breaks = seq(100, 150, 10)) +
   theme_bw() +
-  labs(x = "Species",
-       y = "Growing Degree Days",
-       colour = "Species") +
+  labs(x = "Site name",
+       y = "Growing Degree Days") +
   scale_alpha(guide = "none") +
   labs(fill = "Site", colour = "Site")
 
 
-ggplot(stage_2_for_analysis, aes(species, cum_temp_above_5)) +
-  geom_point()
+
