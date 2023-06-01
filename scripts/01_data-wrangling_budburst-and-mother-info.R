@@ -9,30 +9,19 @@
 library(tidyverse)
 
 
-#### Data Import ####
+#### Budburst ####
 ### Importing budburst scoring
 budburst <- read.csv("~/budburst/data/processed/20230526_budburst-zurich_corrected.csv", stringsAsFactors=TRUE)
 
-### Importing information from mother trees
-mother_info <- read.csv("~/budburst/data/processed/20230526_mother-info_corrected.csv", stringsAsFactors=TRUE)
 
-# Budburst
 ## Checking out the data
 glimpse(budburst)
 ## Checking NAs
 budburst %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
-# Mother Info
-## Checking out the data
-glimpse(mother_info)  
-## Checking NAs
-mother_info %>%
-  summarise(across(everything(), ~ sum(is.na(.))))
 
-
-#### Transforming the data ####
-# Budburst
+#### Transforming the data
 ## make new column with date as day of year
 budburst <- budburst %>%
   mutate(date = as.Date(date, format = "%d.%m.%y")) %>%
@@ -48,7 +37,7 @@ budburst <- budburst %>%
 budburst_drop_na <- budburst %>%
   drop_na(budburst_score)
 
-### check how many acorns were dropped
+## check how many acorns were dropped
 budburst %>%
   summarise(n_distinct(acorn_id))
 budburst_drop_na %>%
@@ -56,6 +45,8 @@ budburst_drop_na %>%
 ### total acorns planted: 1143
 ### total acorns measured: 793
 ### total acorns dropped: 350
+
+
 
 #### Meteorological Data ####
 ### Import meteorological data for Zurich Site 
@@ -67,7 +58,7 @@ glimpse(zurich_weather_jan_till_may_2023)
 zurich_weather_jan_till_may_2023 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
-### Data wrangling
+### transforming the data
 ## change date to DOY
 zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
   mutate(date = as.character(MESSDAT)) %>%
@@ -83,7 +74,19 @@ zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
   mutate(cum_temp_above_5 = cumsum(mean_temp_above_5))
 
 
-#### DF for Stage 2 ####
+
+#### Mother Info #####
+### Importing information from mother trees
+mother_info <- read.csv("~/budburst/data/processed/20230526_mother-info_corrected.csv", stringsAsFactors=TRUE)
+
+## Checking out the data
+glimpse(mother_info)  
+## Checking NAs
+mother_info %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+
+
+#### Stage 2 DF ####
 ## make a new DF: Date of First Stage 2
 ## if not measured, make linear interpolation between the two neighbouring measurements
 
@@ -148,7 +151,6 @@ stage_2 <- stage_2_all %>%
   select(planting_location, acorn_id, mother_id, doy_stage_2)
 ### checking NAs
 which(is.na(stage_2))
-
 
 ### combine stage 2 and mother info
 stage_2_combined_mother <- left_join(stage_2, mother_info, by = "mother_id")
