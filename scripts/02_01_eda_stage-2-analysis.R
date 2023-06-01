@@ -38,7 +38,8 @@ stage_2_for_analysis %>%
   select(cum_temp_above_5, species, altitude, latitude, longitude, age) %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
 
-### Growing Degree Days by Species
+
+### Growing Degree Days by Species ####
 ## make a raincloudplot of gdd by species
 ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5, 
                                  colour = species, fill = species, alpha = 0.5)) +
