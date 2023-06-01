@@ -25,11 +25,8 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
 
 #### LMM ####
-# model_growing_degree_days <- lmer(cum_temp_above_5 ~ species * site_name + (1|mother_id) + (1 + mother_id|age), data = stage_2_for_analysis)
-# not working: fixed-effect model matrix is rank deficient so dropping 50 columns / coefficients
 
-model_growing_degree_days <- lmer(cum_temp_above_5 ~ species + site_name + (1|mother_id) + (1|age), data = stage_2_for_analysis)
-# but: site name is within species! but species|site did not work.
+model_growing_degree_days <- lmer(cum_temp_above_5 ~ species  + age + (1|mother_id), data = stage_2_for_analysis)
 
 summary(model_growing_degree_days)
 anova(model_growing_degree_days, type = "3")
@@ -53,8 +50,16 @@ qqline(ranef(model_growing_degree_days)$age[,1], col = "red")
 
 #### POST HOC TEST ####
 
+######NOTES
+# some kind of tukey test
+emmeans(model_growing_degree_days)
 
+# split lmer by species
+# try with latitude and altitude 
 
-
-
-
+plot(q_robur$latitude,q_robur$altitude
+     )
+# correlated
+# maybe just start with one or do a PCA of lat and alt
+# some kind of site moisture index
+# avg yearly precip from debbie 
