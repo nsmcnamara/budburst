@@ -8,6 +8,7 @@
 # libraries
 library(tidyverse)
 library(lme4)
+library(lmerTest)
 
 
 #### Data Import ####
@@ -26,6 +27,8 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 # model_growing_degree_days <- lmer(cum_temp_above_5 ~ species * site_name + (1|mother_id) + (1 + mother_id|age), data = stage_2_for_analysis)
 # not working: fixed-effect model matrix is rank deficient so dropping 50 columns / coefficients
 
-model_growing_degree_days <- lmer(cum_temp_above_5 ~ species * site_name + (1|mother_id) + (1|age), data = stage_2_for_analysis)
+model_growing_degree_days <- lmer(cum_temp_above_5 ~ species + site_name + (1|mother_id) + (1|age), data = stage_2_for_analysis)
 
 summary(model_growing_degree_days)
+anova(model_growing_degree_days, type = "3")
+
