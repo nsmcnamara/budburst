@@ -107,12 +107,20 @@ budburst_zh22_transformed <- budburst_zh22_clean %>%
 
 #### Meteorological Data ####
 ### Import meteorological data for Zurich Site 
-weather_zh_2023 <- read.csv("~/budburst/data/raw/meteo_UIF_2023-05-31.csv", stringsAsFactors=TRUE)
+weather_zh_2023 <- read.csv("~/budburst/data/processed/weather-zurich-2023.csv", stringsAsFactors=TRUE)
+weather_zh_2022 <- read.csv("~/budburst/data/processed/weather-zurich-2022.csv", stringsAsFactors=TRUE)
+
 
 ## check out data
 glimpse(weather_zh_2023)
 ## Checking NAs
 weather_zh_2023 %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+
+## check out data
+glimpse(weather_zh_2022)
+## Checking NAs
+weather_zh_2022 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
 ### Transforming the data
@@ -127,6 +135,8 @@ weather_zh_2023 <- weather_zh_2023 %>%
   # cumulative temp
   mutate(gdd_above_5 = cumsum(mean_temp_above_5)) %>%
   mutate(gdd_above_0 = cumsum(MESSWERT_mean))
+
+
 
 
 
