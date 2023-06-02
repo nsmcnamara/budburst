@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Stage 2 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-05-31
+### Last update:  2023-06-02
 ### Simone McNamara
 
 #### Setup ####
@@ -21,8 +21,17 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
 
 #### First Data Viz ####
+#### Distributions of Variable ####
 
-### Histogram by species
+### DOY By Species
+doy_stage_2_by_species <- ggplot(stage_2_for_analysis, mapping = aes(doy_stage_2, ..density.., fill = species, alpha = 0.5)) +
+  geom_histogram(bins = 14) +
+  facet_wrap(~species, ncol = 1)
+### +/- 120 days for stage 2
+ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
+
+
+### GDD above 5 by Species
 ggplot(stage_2_for_analysis,
        mapping = aes(cum_temp_above_5, ..density.., fill = species, alpha = 0.5)) +
   geom_histogram(bins = 12) +
