@@ -167,7 +167,7 @@ nrow(distinct(budburst_zh_all, UID))
 direct_first_stage_2 <- budburst_zh_all %>%
   filter(budburst_score == 2) %>%
   group_by(UID) %>%
-  slice_max(day_of_year) %>%
+  slice_min(day_of_year) %>%
   mutate(doy_stage_2 = day_of_year)
 ### 788 observations
 
@@ -257,10 +257,10 @@ write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.
 # find first_stage_5
 direct_first_stage_5 <- budburst_zh_all %>%
   filter(budburst_score == 5) %>%
-  group_by(acorn_id) %>%
+  group_by(UID) %>%
   slice_min(day_of_year) %>%
   mutate(doy_stage_5 = day_of_year)
-### 961 observations: ok
+### 1134 observations: ok
 
 # add gdd at time point of stage 5
 by <- join_by(day_of_year, year == year)
@@ -268,25 +268,29 @@ direct_first_stage_5_weather_for_5 <- left_join(direct_first_stage_5,
                                          weather_zh_2023 %>% select(day_of_year, year, gdd_above_5),
                                          by = by) %>%
   rename(gdd_stage_5 = gdd_above_5) %>%
-  select(-c(date, budburst_score, planting_location, site, pink_score))
+  select(UID, acorn_id, mother_id, cohort, age, year, doy_stage_5, gdd_stage_5)
 
 # add doy stage 2
+
 stage_2_and_5 <- left_join(direct_first_stage_5_weather_for_5,
-                           stage_2_all %>% select(acorn_id, doy_stage_2),
-                           by = "acorn_id") %>%
-  mutate(doy_stage_2 = round(doy_stage_2)) %>%
-  select(acorn_id, mother_id, cohort, age, year, doy_stage_2, doy_stage_5, gdd_stage_5) 
+                           stage_2_all %>% select(UID, doy_stage_2),
+                           by = "UID") %>%
+  mutate(doy_stage_2 = round(doy_stage_2))
 
 # add gdd at time point of stage 2
-by <- join_by(doy_stage_2 == day_of_year, year == year)
-
-
-#### come back here and check if it works ####
+by_weather_2 <- join_by(doy_stage_2 == day_of_year, year == year)
 stage_2_and_5_weather <- left_join(stage_2_and_5, 
                                     weather_zh_2023 %>% select(day_of_year, year, gdd_above_5),
-                                                by = by)
+                                                by = by_weather_2) %>%
+  rename(gdd_stage_2 = gdd_above_5)
 
 
-# add gdd for stage 5, stage 2 and take difference
-gdd_2_to_5 <- stage_2_and_5 %>%
+# take difference of gdd at stage 5 to gdd at stage 2
+gdd_2_to_5 <- stage_2_and_5_weather %>%
+  rowwise() %>%
+  mutate(gdd_2_to_5 = gdd_stage_5 - gdd_stage_2)
+  
+
+### export gdd_2_to_5
+write_csv(gdd_2_to_5, "~/budburst/data/processed/gdd_2_to_5.csv")
   
