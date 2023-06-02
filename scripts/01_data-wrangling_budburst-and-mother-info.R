@@ -53,34 +53,29 @@ budburst_transformed <- budburst_clean %>%
 
 
 
-
 #### Meteorological Data ####
 ### Import meteorological data for Zurich Site 
 zurich_weather_jan_till_may_2023 <- read.csv("~/budburst/data/raw/meteo_UIF_2023-05-31.csv", stringsAsFactors=TRUE)
 
-### check out data
+## check out data
 glimpse(zurich_weather_jan_till_may_2023)
 ## Checking NAs
 zurich_weather_jan_till_may_2023 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
-### transforming the data
-## change date to DOY
+### Transforming the data
 zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+  # Change date to DOY
   mutate(date = as.character(MESSDAT)) %>%
   mutate(date = clock::date_time_parse_RFC_3339(date)) %>%
-  mutate(day_of_year = lubridate::yday(date))
-
-## calculate temp above 5 degrees per day
-zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
-  mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0))
-
-## cumulative temp
-zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
-  mutate(cum_temp_above_5 = cumsum(mean_temp_above_5))
+  mutate(day_of_year = lubridate::yday(date)) %>%
+  # calculate temp above 5 degrees per day
+  mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0)) %>%
+  # cumulative temp
+  mutate(gdd_above_5 = cumsum(mean_temp_above_5))
 
 
-
+  
 #### Mother Info #####
 ### Importing information from mother trees
 mother_info <- read.csv("~/budburst/data/processed/20230526_mother-info_corrected.csv", stringsAsFactors=TRUE)
