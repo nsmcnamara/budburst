@@ -34,8 +34,8 @@ budburst %>%
 budburst_clean %>%
   summarise(n_distinct(acorn_id))
 ### total acorns planted: 1143
-### total acorns measured: 782
-### total acorns dropped: 361
+### total acorns measured: 780
+### total acorns dropped: 363
 
 
 ### Transforming the data
@@ -76,10 +76,10 @@ zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
   mutate(gdd_above_0 = cumsum(MESSWERT_mean))
 
 
-  
+
 #### Mother Info #####
 ### Importing information from mother trees
-mother_info <- read.csv("~/budburst/data/processed/20230526_mother-info_corrected.csv", stringsAsFactors=TRUE)
+mother_info <- read.csv("~/budburst/data/processed/mother-info.csv", stringsAsFactors=TRUE)
 
 ## Checking out the data
 glimpse(mother_info)  
@@ -92,23 +92,23 @@ mother_info %>%
 ## make a new DF: Date of First Stage 2
 ## if not measured, make linear interpolation between the two neighbouring measurements
 
-### find all for which stage 2 was measured
-direct_first_stage_2 <- budburst_drop_na %>%
+# find all for which stage 2 was measured
+direct_first_stage_2 <- budburst_transformed %>%
   filter(budburst_score == 2) %>%
   group_by(acorn_id) %>%
   slice_max(day_of_year) %>%
   mutate(doy_stage_2 = day_of_year)
 ### 639 observations
 
-### for those who went directly to stage 3, 4 or 5, make linear interpolation
-### filter those for which stage 2 was not measured
-stage_2_missed <- budburst_drop_na %>%
+# for those who went directly to stage 3, 4 or 5, make linear interpolation
+# filter those for which stage 2 was not measured
+stage_2_missed <- budburst_transformed %>%
   filter(!acorn_id %in% direct_first_stage_2$acorn_id)
 nrow(distinct(stage_2_missed, acorn_id))
-### 154
-### sanity check: 154 + 639 = 793, ie all measurements accounted for
+### 141
+### sanity check: 141 + 639 = 780, ie all measurements accounted for
 
-### find first observation after stage 2 was reached
+# find first observation after stage 2 was reached
 stage_2_post <- stage_2_missed %>%
   group_by(acorn_id) %>%
   filter(budburst_score >= 2) %>%
@@ -118,24 +118,19 @@ stage_2_post <- stage_2_missed %>%
   select(acorn_id, day_of_year_post_2, budburst_score_post_2)
 ### 141 observations
 
-### select last observation for each acorn.id before stage 2
+# select last observation for each acorn.id before stage 2
 stage_2_pre <- stage_2_missed %>%
   group_by(acorn_id) %>%
   filter(budburst_score <= 2) %>%
   slice_max(day_of_year) %>%
   rename(budburst_score_pre_2 = budburst_score) %>%
   rename(day_of_year_pre_2 = day_of_year)
-### 154 observations, 
+### 141 observations, 
 
-### check why 13 have pre but not post
-stage_2_pre %>%
-  filter(!acorn_id %in% stage_2_post$acorn_id)
-### 11 dead, 1 missing, 1 stuck on budburst score 1 --> ok
-
-### combine dfs
+# combine dfs
 stage_2_missed_combined <- inner_join(stage_2_pre, stage_2_post, by = "acorn_id", keep = FALSE)
 
-### linear interpolation of stage 2
+# linear interpolation of stage 2
 stage_2_interpolated <- stage_2_missed_combined %>%
   mutate(difference_days = day_of_year_post_2 - day_of_year_pre_2) %>%
   mutate(difference_budburst_score = budburst_score_post_2 - budburst_score_pre_2) %>%
@@ -143,35 +138,35 @@ stage_2_interpolated <- stage_2_missed_combined %>%
   mutate(amount_steps = 2 - budburst_score_pre_2) %>%
   mutate(doy_stage_2 = day_of_year_pre_2 + (amount_steps * days_per_score_step))
 
-### combine calculated and interpolated stage 2 df
+# combine calculated and interpolated stage 2 df
 stage_2_all <- rbind(direct_first_stage_2, stage_2_interpolated)
 ### 780 in total
 ### sanity check: 639 + 141 = 780 --> ok
 
-### clean up df
+# clean up df
 stage_2 <- stage_2_all %>%
   select(planting_location, acorn_id, mother_id, doy_stage_2)
-### checking NAs
+# checking NAs
 which(is.na(stage_2))
 
-### combine stage 2 and mother info
+# combine stage 2 and mother info
 stage_2_combined_mother <- left_join(stage_2, mother_info, by = "mother_id")
-### no mother info found (these arrived late and must be excluded from analysis)
+# no mother info found (these arrived late and must be excluded from analysis)
 stage_2_combined_mother <- stage_2_combined_mother %>%
   drop_na(species)
 ### total: 756 acorns for analysis
 
-### add column about age
+# add column about age
 stage_2_combined_mother <- stage_2_combined_mother %>%
   mutate(age = case_when(str_detect(acorn_id, "K") ~ 3, TRUE ~ 2))
 
-### add cumulative temperature
+# add cumulative temperature
 stage_2_combined_mother <-  stage_2_combined_mother %>%
   mutate(day_of_year = round(doy_stage_2))
 
 stage_2_combined_mother_weather <- left_join(stage_2_combined_mother, zurich_weather_jan_till_may_2023, by = "day_of_year")
 
-## drop not relevant columns
+# drop not relevant columns
 stage_2_for_analysis <- stage_2_combined_mother_weather %>%
   select(-c(17:26))
 
