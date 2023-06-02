@@ -75,7 +75,7 @@ gdd_above_5_petraea_by_site <- stage_2_for_analysis %>%
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                     fill = site_name)) +
-  geom_histogram(bins = 40) +
+  geom_histogram(bins = 40, colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
@@ -100,7 +100,7 @@ gdd_above_5_petraea_by_site_and_age <- stage_2_for_analysis %>%
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                        fill = as.factor(age))) +
-  geom_histogram(bins = 40, position = "dodge") +
+  geom_histogram(bins = 40, position = "dodge", colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
@@ -128,7 +128,7 @@ gdd_above_5_pubescens_by_site <- stage_2_for_analysis %>%
   filter(species == "Q.pubescens") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                        fill = site_name)) +
-  geom_histogram(bins = 40) +
+  geom_histogram(bins = 40, colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
@@ -153,7 +153,7 @@ gdd_above_5_pubescens_by_site_and_age <- stage_2_for_analysis %>%
   filter(species == "Q.pubescens") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                        fill = as.factor(age))) +
-  geom_histogram(bins = 40, position = "dodge") +
+  geom_histogram(bins = 40, position = "dodge", colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
@@ -177,7 +177,7 @@ gdd_above_5_robur_by_site <- stage_2_for_analysis %>%
   filter(species == "Q.robur") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                        fill = site_name)) +
-  geom_histogram(bins = 40) +
+  geom_histogram(bins = 40, colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set3") +
@@ -202,7 +202,7 @@ gdd_above_5_robur_by_site_and_age <- stage_2_for_analysis %>%
   filter(species == "Q.robur") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                        fill = as.factor(age))) +
-  geom_histogram(bins = 40, position = "dodge") +
+  geom_histogram(bins = 40, position = "dodge", colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
@@ -248,7 +248,7 @@ stage_2_for_analysis %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
 
 
-### Growing Degree Days by Species ####
+### Rainclouds ####
 ## make a raincloudplot of gdd by species
 ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5, 
                                  colour = species, fill = species, alpha = 0.5)) +
