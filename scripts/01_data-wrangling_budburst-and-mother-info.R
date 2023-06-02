@@ -133,9 +133,7 @@ weather_zh_2023 <- weather_zh_2023 %>%
   # calculate temp above 5 degrees per day
   mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0)) %>%
   # cumulative temp
-  mutate(gdd_above_5 = cumsum(mean_temp_above_5)) %>%
-  mutate(gdd_above_0 = cumsum(MESSWERT_mean))
-
+  mutate(gdd_above_5 = cumsum(mean_temp_above_5))
 
 
 
@@ -153,7 +151,14 @@ mother_info %>%
 
 #### Stage 2 DF ####
 ## combine budburst 2022 and 2023
-budburst_zh_all <- bind_rows(budburst_zh22_transformed, budburst_zh23_transformed)
+budburst_zh_all <- bind_rows(budburst_zh22_transformed, budburst_zh23_transformed) %>%
+# make new unique identifier
+  mutate(UID = paste0(acorn_id, "_", year))
+nrow(distinct(budburst_zh22_transformed, acorn_id))
+nrow(distinct(budburst_zh23_transformed, acorn_id))
+### 356 + 780 = 1136
+nrow(distinct(budburst_zh_all, UID))
+### 1136
 
 ## make a new DF: Date of First Stage 2
 ## if not measured, make linear interpolation between the two neighbouring measurements
@@ -161,41 +166,44 @@ budburst_zh_all <- bind_rows(budburst_zh22_transformed, budburst_zh23_transforme
 # find all for which stage 2 was measured
 direct_first_stage_2 <- budburst_zh_all %>%
   filter(budburst_score == 2) %>%
-  group_by(acorn_id) %>%
+  group_by(UID) %>%
   slice_max(day_of_year) %>%
   mutate(doy_stage_2 = day_of_year)
-### 728 observations
+### 788 observations
 
 # for those who went directly to stage 3, 4 or 5, make linear interpolation
 # filter those for which stage 2 was not measured
 stage_2_missed <- budburst_zh_all %>%
-  filter(!acorn_id %in% direct_first_stage_2$acorn_id)
-nrow(distinct(stage_2_missed, acorn_id))
-### 233
+  filter(!UID %in% direct_first_stage_2$UID)
+nrow(distinct(stage_2_missed, UID))
+### 348
 nrow(distinct(budburst_zh_all, acorn_id))
-### sanity check: 233 + 728 = 961, ie all measurements accounted for
+### sanity check: 348 + 788 = 1136, ie all measurements accounted for
 
 # find first observation after stage 2 was reached
 stage_2_post <- stage_2_missed %>%
-  group_by(acorn_id) %>%
+  group_by(UID) %>%
   filter(budburst_score >= 2) %>%
   slice_min(day_of_year) %>%
   rename(budburst_score_post_2 = budburst_score) %>%
   rename(day_of_year_post_2 = day_of_year) %>%
-  select(acorn_id, day_of_year_post_2, budburst_score_post_2)
-### 233 observations
+  select(UID, acorn_id, day_of_year_post_2, budburst_score_post_2)
+### 348 observations
 
 # select last observation for each acorn.id before stage 2
 stage_2_pre <- stage_2_missed %>%
-  group_by(acorn_id) %>%
+  group_by(UID) %>%
   filter(budburst_score <= 2) %>%
   slice_max(day_of_year) %>%
   rename(budburst_score_pre_2 = budburst_score) %>%
   rename(day_of_year_pre_2 = day_of_year)
-### 233 observations
+### 348 observations
 
 # combine dfs
-stage_2_missed_combined <- inner_join(stage_2_pre, stage_2_post, by = "acorn_id", keep = FALSE)
+by_s2 <- join_by(UID, acorn_id == acorn_id)
+stage_2_missed_combined <- left_join(stage_2_pre, 
+                                     stage_2_post,
+                                     by = by_s2)
 
 # linear interpolation of stage 2
 stage_2_interpolated <- stage_2_missed_combined %>%
@@ -207,33 +215,36 @@ stage_2_interpolated <- stage_2_missed_combined %>%
 
 # combine calculated and interpolated stage 2 df
 stage_2_all <- rbind(direct_first_stage_2, stage_2_interpolated)
-### 961 in total
+### 1136 in total
 ### sanity check: same as unique in budburst_zh_all
 
 # clean up df
 stage_2 <- stage_2_all %>%
-  select(acorn_id, mother_id, doy_stage_2, cohort, age, year)
+  select(UID, acorn_id, mother_id, doy_stage_2, cohort, age, year)
 # checking NAs
 which(is.na(stage_2))
 
 # combine stage 2 and mother info
 stage_2_combined_mother <- left_join(stage_2, mother_info, by = "mother_id")
-### 961 observations
+### 1136 observations
 # for 24 acorns, no mother info found (these arrived late and must be excluded from analysis)
 stage_2_combined_mother <- stage_2_combined_mother %>%
   drop_na(species)
-### total: 937 acorns for analysis
+### total: 1112 acorns for analysis
 
 # add cumulative temperature
 stage_2_combined_mother <-  stage_2_combined_mother %>%
   mutate(day_of_year = round(doy_stage_2))
 
-by <- join_by(day_of_year, year == year)
-stage_2_combined_mother_weather <- left_join(stage_2_combined_mother, weather_zh_2023, by = by)
+by_add_weather <- join_by(day_of_year, year == year)
+stage_2_combined_mother_weather <- left_join(stage_2_combined_mother, 
+                                             weather_zh_2023%>% 
+                                               select(day_of_year, year, gdd_above_5), 
+                                             by = by_add_weather)
 
-# drop not relevant columns
 stage_2_for_analysis <- stage_2_combined_mother_weather %>%
-  select(-c(18:26))
+  select(-day_of_year) %>%
+  relocate(doy_stage_2, .before = gdd_above_5)
 
 ### export DF for stage 2
 write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.csv")
@@ -241,3 +252,41 @@ write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.
 
 
 #### Time 2 To 5 ####
+### calculate how many growing degree days from stage 2 to stage 5
+
+# find first_stage_5
+direct_first_stage_5 <- budburst_zh_all %>%
+  filter(budburst_score == 5) %>%
+  group_by(acorn_id) %>%
+  slice_min(day_of_year) %>%
+  mutate(doy_stage_5 = day_of_year)
+### 961 observations: ok
+
+# add gdd at time point of stage 5
+by <- join_by(day_of_year, year == year)
+direct_first_stage_5_weather_for_5 <- left_join(direct_first_stage_5, 
+                                         weather_zh_2023 %>% select(day_of_year, year, gdd_above_5),
+                                         by = by) %>%
+  rename(gdd_stage_5 = gdd_above_5) %>%
+  select(-c(date, budburst_score, planting_location, site, pink_score))
+
+# add doy stage 2
+stage_2_and_5 <- left_join(direct_first_stage_5_weather_for_5,
+                           stage_2_all %>% select(acorn_id, doy_stage_2),
+                           by = "acorn_id") %>%
+  mutate(doy_stage_2 = round(doy_stage_2)) %>%
+  select(acorn_id, mother_id, cohort, age, year, doy_stage_2, doy_stage_5, gdd_stage_5) 
+
+# add gdd at time point of stage 2
+by <- join_by(doy_stage_2 == day_of_year, year == year)
+
+
+#### come back here and check if it works ####
+stage_2_and_5_weather <- left_join(stage_2_and_5, 
+                                    weather_zh_2023 %>% select(day_of_year, year, gdd_above_5),
+                                                by = by)
+
+
+# add gdd for stage 5, stage 2 and take difference
+gdd_2_to_5 <- stage_2_and_5 %>%
+  
