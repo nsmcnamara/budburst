@@ -46,6 +46,35 @@ gdd_above_5_by_species
 ggsave(filename = "gdd_above_5_by_species.png", device = png, plot = gdd_above_5_by_species, path = "output/figs")
 
 
+### GDD above 5 for Q.petraea by site
+# all sites for all species individually
+# ggplot(data = stage_2_for_analysis,
+#       mapping = aes(x = gdd_above_5, y = ..density..,
+#                     fill = species, alpha = 0.5)) +
+#  geom_histogram(bins = 14) +
+#  facet_wrap(~site_name)
+
+# all sites for petraea 
+gdd_above_5_petraea_by_site <- stage_2_for_analysis %>% 
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                    fill = site_name, alpha = 0.5)) +
+  geom_histogram(bins = 14) +
+  facet_wrap(~site_name, ncol = 1)
+
+gdd_above_5_petraea_by_site
+ggsave(filename = "gdd_above_5_petraea_by_site.png", device = png, plot = gdd_above_5_petraea_by_site, path = "output/figs")
+
+
+# all sites for petraea, by age cohort
+stage_2_for_analysis %>% 
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                       fill = as.factor(age), alpha = 0.5)) +
+  geom_histogram(bins = 14) +
+  facet_wrap(~site_name, ncol = 1)
+
+
 ### QQ Plot
 qqnorm(stage_2_for_analysis$cum_temp_above_5)
 qqline(stage_2_for_analysis$cum_temp_above_5)
