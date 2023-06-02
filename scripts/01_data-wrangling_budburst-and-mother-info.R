@@ -11,27 +11,27 @@ library(tidyverse)
 
 #### Budburst 23 ####
 ### Importing budburst data from 2023
-budburst <- read.csv("~/budburst/data/processed/budburst-zurich.csv", stringsAsFactors=TRUE)
+budburst_zh23 <- read.csv("~/budburst/data/processed/budburst-zurich-2023.csv", stringsAsFactors=TRUE)
 
 
 ## Checking out the data
-glimpse(budburst)
+glimpse(budburst_23)
 ## Checking NAs
-budburst %>%
+budburst_zh23 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
 
 ### Cleaning the data
 ## Remove unwanted rows
 # drop na and remove dead
-budburst_clean <- budburst %>%
+budburst_zh23_clean <- budburst_zh23 %>%
   drop_na(budburst_score)  %>%
   filter(notes_2023 != "DEAD")
 
 # check how many acorns were removed
-budburst %>%
+budburst_zh23 %>%
   summarise(n_distinct(acorn_id))
-budburst_clean %>%
+budburst_zh23_clean %>%
   summarise(n_distinct(acorn_id))
 ### total acorns planted: 1143
 ### total acorns measured: 780
@@ -39,7 +39,7 @@ budburst_clean %>%
 
 
 ### Transforming the data
-budburst_transformed <- budburst_clean %>%
+budburst_zh23_transformed <- budburst_zh23_clean %>%
   # new column: changing date to day of year
   mutate(date = as.Date(date, format = "%d.%m.%y")) %>%
   mutate(day_of_year = lubridate::yday(date)) %>%
@@ -50,6 +50,9 @@ budburst_transformed <- budburst_clean %>%
   mutate(mother_id = case_when(str_detect(acorn_id, "K") ~ str_sub(acorn_id, 3, str_length(acorn_id)),
                                TRUE ~ acorn_id)) %>%
   mutate(mother_id = str_sub(mother_id, 1, -3))
+
+
+#### Budburst 22 ####
 
 
 
