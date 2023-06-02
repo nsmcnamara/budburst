@@ -53,6 +53,16 @@ budburst_zh23_transformed <- budburst_zh23_clean %>%
 
 
 #### Budburst 22 ####
+### Importing budburst data from 2022
+budburst_zh22 <- read.csv("~/budburst/data/processed/budburst-zurich-2022.csv", stringsAsFactors=TRUE)
+
+
+## Checking out the data
+glimpse(budburst_zh22)
+## Checking NAs
+budburst_zh22 %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+
 
 
 
