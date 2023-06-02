@@ -7,6 +7,7 @@
 # libraries
 library(tidyverse)
 library(GGally)
+library(RColorBrewer)
 
 #### Data Import ####
 stage_2_for_analysis <- read.csv("~/budburst/data/processed/stage_2_for_analysis.csv", stringsAsFactors=TRUE)
@@ -24,9 +25,18 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 #### Distributions of Variable ####
 
 ### DOY by Species
-doy_stage_2_by_species <- ggplot(stage_2_for_analysis, mapping = aes(doy_stage_2, ..density.., fill = species, alpha = 0.5)) +
+doy_stage_2_by_species <- ggplot(stage_2_for_analysis, 
+      mapping = aes(doy_stage_2, ..density.., 
+                    fill = species)) +
   geom_histogram(bins = 14) +
-  facet_wrap(~species, ncol = 1)
+  facet_wrap(~species, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  labs(title = "DOY Stage 2, split by Species",
+       x = "DOY Stage 2",
+       y = "Frequency",
+       fill = "Species") +
+  scale_alpha(guide = "none")
 
 doy_stage_2_by_species
 ### +/- 120 days for stage 2
@@ -36,9 +46,17 @@ ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2
 
 ### GDD above 5 by Species
 gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
-       mapping = aes(gdd_above_5, ..density.., fill = species, alpha = 0.5)) +
+       mapping = aes(gdd_above_5, ..density.., 
+                     fill = species)) +
   geom_histogram(bins = 14) +
-  facet_wrap( ~species, ncol = 1)
+  facet_wrap( ~species, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  labs(title = "GDD above 5, split by Species",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Species") +
+  scale_alpha(guide = "none")
 
 gdd_above_5_by_species
 ### pubescens first, petraea second, robur third, all around 200
