@@ -108,7 +108,8 @@ gdd_above_5_petraea_by_site_and_age <- stage_2_for_analysis %>%
   labs(title = "GDD above 5 for Q. petraea, split by Site and Age",
        x = "Growing Degree Days",
        y = "Frequency",
-       fill = "Age")
+       fill = "Age") +
+  xlim(100, 400)
 
 gdd_above_5_petraea_by_site_and_age
 ggsave(filename = "gdd_above_5_petraea_by_site_and_age.png", 
@@ -127,29 +128,35 @@ gdd_above_5_pubescens_by_site <- stage_2_for_analysis %>%
   filter(species == "Q.pubescens") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                        fill = site_name)) +
-  geom_histogram(bins = 14) +
+  geom_histogram(bins = 40) +
+  geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  theme_bw() +
   labs(title = "GDD above 5 for Q. pubescens, split by Site",
        x = "Growing Degree Days",
        y = "Frequency",
-       fill = "Site name")
-
+       fill = "Site name") +
+  xlim(100, 400) +
+  theme(legend.position = "none")
+  
+  
 gdd_above_5_pubescens_by_site
 
-ggsave(filename = "gdd_above_5_pubescens_by_site.png", device = png, plot = gdd_above_5_pubescens_by_site, path = "output/figs")
+ggsave(filename = "gdd_above_5_pubescens_by_site.png", 
+       device = png, width = 5,
+       plot = gdd_above_5_pubescens_by_site, 
+       path = "output/figs")
 
 
-# all sites for pubescens, by age cohort
+# all sites for pubescens, by site and age 
 gdd_above_5_pubescens_by_site_and_age <- stage_2_for_analysis %>% 
   filter(species == "Q.pubescens") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
                        fill = as.factor(age))) +
-  geom_histogram(bins = 14) +
+  geom_histogram(bins = 40, position = "dodge") +
+  geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  theme_bw() +
   labs(title = "GDD above 5 for Q. pubescens, split by Site and Age",
        x = "Growing Degree Days",
        y = "Frequency",
@@ -157,7 +164,67 @@ gdd_above_5_pubescens_by_site_and_age <- stage_2_for_analysis %>%
   xlim(100, 400)
 
 gdd_above_5_pubescens_by_site_and_age
-ggsave(filename = "gdd_above_5_pubescens_by_site_and_age.png", device = png, plot = gdd_above_5_pubescens_by_site_and_age)
+ggsave(filename = "gdd_above_5_pubescens_by_site_and_age.png", 
+       device = png, width = 5,
+       plot = gdd_above_5_pubescens_by_site_and_age,
+       path = "output/figs")
+
+#### Robur ####
+### GDD above 5 for Q. Robur by site
+
+# all sites for robur 
+gdd_above_5_robur_by_site <- stage_2_for_analysis %>% 
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                       fill = site_name)) +
+  geom_histogram(bins = 40) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set3") +
+  labs(title = "GDD above 5 for Q. robur, split by Site",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Site name") +
+  xlim(100, 400) +
+  theme(legend.position = "none")
+
+
+gdd_above_5_robur_by_site
+
+ggsave(filename = "gdd_above_5_robur_by_site.png", 
+       device = png, width = 5,
+       plot = gdd_above_5_robur_by_site, 
+       path = "output/figs")
+
+
+# all sites for robur, by site and age 
+gdd_above_5_robur_by_site_and_age <- stage_2_for_analysis %>% 
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                       fill = as.factor(age))) +
+  geom_histogram(bins = 40, position = "dodge") +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "GDD above 5 for Q. robur, split by Site and Age",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Age") +
+  xlim(100, 400)
+
+gdd_above_5_robur_by_site_and_age
+ggsave(filename = "gdd_above_5_robur_by_site_and_age.png", 
+       device = png, width = 5,
+       plot = gdd_above_5_robur_by_site_and_age,
+       path = "output/figs")
+
+
+
+
+
+
+
+
 
 
 
