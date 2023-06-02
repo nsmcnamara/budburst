@@ -22,9 +22,8 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
 
 #### First Data Viz ####
-#### Distributions of Variable ####
 
-### DOY by Species
+### DOY by Species ####
 doy_stage_2_by_species <- ggplot(stage_2_for_analysis, 
       mapping = aes(doy_stage_2, ..density.., 
                     fill = species)) +
@@ -35,8 +34,7 @@ doy_stage_2_by_species <- ggplot(stage_2_for_analysis,
   labs(title = "DOY Stage 2, split by Species",
        x = "DOY Stage 2",
        y = "Frequency",
-       fill = "Species") +
-  scale_alpha(guide = "none")
+       fill = "Species")
 
 doy_stage_2_by_species
 ### +/- 120 days for stage 2
@@ -44,6 +42,7 @@ doy_stage_2_by_species
 ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
 
 
+### Growing Degree Days ####
 ### GDD above 5 by Species
 gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
        mapping = aes(gdd_above_5, ..density.., 
@@ -55,15 +54,14 @@ gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
   labs(title = "GDD above 5, split by Species",
        x = "Growing Degree Days",
        y = "Frequency",
-       fill = "Species") +
-  scale_alpha(guide = "none")
+       fill = "Species")
 
 gdd_above_5_by_species
 ### pubescens first, petraea second, robur third, all around 200
 
 ggsave(filename = "gdd_above_5_by_species.png", device = png, plot = gdd_above_5_by_species, path = "output/figs")
 
-
+#### Petraea ####
 ### GDD above 5 for Q.petraea by site
 # all sites for all species individually
 # ggplot(data = stage_2_for_analysis,
@@ -76,21 +74,101 @@ ggsave(filename = "gdd_above_5_by_species.png", device = png, plot = gdd_above_5
 gdd_above_5_petraea_by_site <- stage_2_for_analysis %>% 
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                    fill = site_name, alpha = 0.5)) +
-  geom_histogram(bins = 14) +
-  facet_wrap(~site_name, ncol = 1)
+                    fill = site_name)) +
+  geom_histogram(bins = 40) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "GDD above 5 for Q. petraea, split by Site",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Site name") +
+  xlim(100, 400) +
+  theme(legend.position = "none")
+
 
 gdd_above_5_petraea_by_site
-ggsave(filename = "gdd_above_5_petraea_by_site.png", device = png, plot = gdd_above_5_petraea_by_site, path = "output/figs")
+
+ggsave(filename = "gdd_above_5_petraea_by_site.png", 
+       device = png, width = 5,
+       plot = gdd_above_5_petraea_by_site, 
+       path = "output/figs")
 
 
 # all sites for petraea, by age cohort
-stage_2_for_analysis %>% 
+gdd_above_5_petraea_by_site_and_age <- stage_2_for_analysis %>% 
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = as.factor(age), alpha = 0.5)) +
+                       fill = as.factor(age))) +
+  geom_histogram(bins = 40, position = "dodge") +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  labs(title = "GDD above 5 for Q. petraea, split by Site and Age",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Age")
+
+gdd_above_5_petraea_by_site_and_age
+ggsave(filename = "gdd_above_5_petraea_by_site_and_age.png", 
+       device = png, width = 5,
+       plot = gdd_above_5_petraea_by_site_and_age,
+       path = "output/figs")
+
+
+
+
+#### Pubescens ####
+### GDD above 5 for Q.pubescens by site
+
+# all sites for pubescens 
+gdd_above_5_pubescens_by_site <- stage_2_for_analysis %>% 
+  filter(species == "Q.pubescens") %>%
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                       fill = site_name)) +
   geom_histogram(bins = 14) +
-  facet_wrap(~site_name, ncol = 1)
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  labs(title = "GDD above 5 for Q. pubescens, split by Site",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Site name")
+
+gdd_above_5_pubescens_by_site
+
+ggsave(filename = "gdd_above_5_pubescens_by_site.png", device = png, plot = gdd_above_5_pubescens_by_site, path = "output/figs")
+
+
+# all sites for pubescens, by age cohort
+gdd_above_5_pubescens_by_site_and_age <- stage_2_for_analysis %>% 
+  filter(species == "Q.pubescens") %>%
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                       fill = as.factor(age))) +
+  geom_histogram(bins = 14) +
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  labs(title = "GDD above 5 for Q. pubescens, split by Site and Age",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Age") +
+  xlim(100, 400)
+
+gdd_above_5_pubescens_by_site_and_age
+ggsave(filename = "gdd_above_5_pubescens_by_site_and_age.png", device = png, plot = gdd_above_5_pubescens_by_site_and_age)
+
+
+
+
+
+
+
+
+
+
+
 
 
 ### QQ Plot
