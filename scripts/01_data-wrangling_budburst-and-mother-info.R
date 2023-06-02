@@ -15,7 +15,7 @@ budburst_zh23 <- read.csv("~/budburst/data/processed/budburst-zurich-2023.csv", 
 
 
 ## Checking out the data
-glimpse(budburst_23)
+glimpse(budburst_zh23)
 ## Checking NAs
 budburst_zh23 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
@@ -49,7 +49,11 @@ budburst_zh23_transformed <- budburst_zh23_clean %>%
   # then remove last two characters from all
   mutate(mother_id = case_when(str_detect(acorn_id, "K") ~ str_sub(acorn_id, 3, str_length(acorn_id)),
                                TRUE ~ acorn_id)) %>%
-  mutate(mother_id = str_sub(mother_id, 1, -3))
+  mutate(mother_id = str_sub(mother_id, 1, -3)) %>%
+  # add column for age cohort
+  mutate(cohort = case_when(str_detect(acorn_id, "K") ~ "2023_3", TRUE ~ "2023_2")) %>%
+  mutate(age = case_when(str_detect(acorn_id, "K") ~ "3", TRUE ~ "2")) %>%
+  mutate(year = "2023")
 
 
 #### Budburst 22 ####
@@ -83,22 +87,41 @@ budburst_zh22_clean %>%
 
 
 
+### Transforming the data
+budburst_zh22_transformed <- budburst_zh22_clean %>%
+  # new column: changing date to day of year
+  mutate(date = as.Date(date, format = "%d.%m.%y")) %>%
+  mutate(day_of_year = lubridate::yday(date)) %>%
+  ## add mother_id column for joining data frames
+  # if starts with a K, remove this
+  # then remove last two characters from all
+  mutate(mother_id = case_when(str_detect(acorn_id, "K") ~ str_sub(acorn_id, 3, str_length(acorn_id)),
+                               TRUE ~ acorn_id)) %>%
+  mutate(mother_id = str_sub(mother_id, 1, -3)) %>%
+  # add column for age cohort
+  mutate(cohort = "2022_2") %>%
+  mutate(age = "2") %>%
+  mutate(year = "2022")
+
+
+
 #### Meteorological Data ####
 ### Import meteorological data for Zurich Site 
-zurich_weather_jan_till_may_2023 <- read.csv("~/budburst/data/raw/meteo_UIF_2023-05-31.csv", stringsAsFactors=TRUE)
+weather_zh_2023 <- read.csv("~/budburst/data/raw/meteo_UIF_2023-05-31.csv", stringsAsFactors=TRUE)
 
 ## check out data
-glimpse(zurich_weather_jan_till_may_2023)
+glimpse(weather_zh_2023)
 ## Checking NAs
-zurich_weather_jan_till_may_2023 %>%
+weather_zh_2023 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
 ### Transforming the data
-zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
+weather_zh_2023 <- weather_zh_2023 %>%
   # Change date to DOY
   mutate(date = as.character(MESSDAT)) %>%
   mutate(date = clock::date_time_parse_RFC_3339(date)) %>%
   mutate(day_of_year = lubridate::yday(date)) %>%
+  mutate(year = "2023") %>%
   # calculate temp above 5 degrees per day
   mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0)) %>%
   # cumulative temp
@@ -119,24 +142,28 @@ mother_info %>%
 
 
 #### Stage 2 DF ####
+## combine budburst 2022 and 2023
+budburst_zh_all <- bind_rows(budburst_zh22_transformed, budburst_zh23_transformed)
+
 ## make a new DF: Date of First Stage 2
 ## if not measured, make linear interpolation between the two neighbouring measurements
 
 # find all for which stage 2 was measured
-direct_first_stage_2 <- budburst_transformed %>%
+direct_first_stage_2 <- budburst_zh_all %>%
   filter(budburst_score == 2) %>%
   group_by(acorn_id) %>%
   slice_max(day_of_year) %>%
   mutate(doy_stage_2 = day_of_year)
-### 639 observations
+### 728 observations
 
 # for those who went directly to stage 3, 4 or 5, make linear interpolation
 # filter those for which stage 2 was not measured
-stage_2_missed <- budburst_transformed %>%
+stage_2_missed <- budburst_zh_all %>%
   filter(!acorn_id %in% direct_first_stage_2$acorn_id)
 nrow(distinct(stage_2_missed, acorn_id))
-### 141
-### sanity check: 141 + 639 = 780, ie all measurements accounted for
+### 233
+nrow(distinct(budburst_zh_all, acorn_id))
+### sanity check: 233 + 728 = 961, ie all measurements accounted for
 
 # find first observation after stage 2 was reached
 stage_2_post <- stage_2_missed %>%
@@ -146,7 +173,7 @@ stage_2_post <- stage_2_missed %>%
   rename(budburst_score_post_2 = budburst_score) %>%
   rename(day_of_year_post_2 = day_of_year) %>%
   select(acorn_id, day_of_year_post_2, budburst_score_post_2)
-### 141 observations
+### 233 observations
 
 # select last observation for each acorn.id before stage 2
 stage_2_pre <- stage_2_missed %>%
@@ -155,7 +182,7 @@ stage_2_pre <- stage_2_missed %>%
   slice_max(day_of_year) %>%
   rename(budburst_score_pre_2 = budburst_score) %>%
   rename(day_of_year_pre_2 = day_of_year)
-### 141 observations, 
+### 233 observations
 
 # combine dfs
 stage_2_missed_combined <- inner_join(stage_2_pre, stage_2_post, by = "acorn_id", keep = FALSE)
@@ -170,36 +197,37 @@ stage_2_interpolated <- stage_2_missed_combined %>%
 
 # combine calculated and interpolated stage 2 df
 stage_2_all <- rbind(direct_first_stage_2, stage_2_interpolated)
-### 780 in total
-### sanity check: 639 + 141 = 780 --> ok
+### 961 in total
+### sanity check: same as unique in budburst_zh_all
 
 # clean up df
 stage_2 <- stage_2_all %>%
-  select(planting_location, acorn_id, mother_id, doy_stage_2)
+  select(acorn_id, mother_id, doy_stage_2, cohort, age, year)
 # checking NAs
 which(is.na(stage_2))
 
 # combine stage 2 and mother info
 stage_2_combined_mother <- left_join(stage_2, mother_info, by = "mother_id")
-# no mother info found (these arrived late and must be excluded from analysis)
+### 961 observations
+# for 24 acorns, no mother info found (these arrived late and must be excluded from analysis)
 stage_2_combined_mother <- stage_2_combined_mother %>%
   drop_na(species)
-### total: 756 acorns for analysis
-
-# add column about age
-stage_2_combined_mother <- stage_2_combined_mother %>%
-  mutate(age = case_when(str_detect(acorn_id, "K") ~ 3, TRUE ~ 2))
+### total: 937 acorns for analysis
 
 # add cumulative temperature
 stage_2_combined_mother <-  stage_2_combined_mother %>%
   mutate(day_of_year = round(doy_stage_2))
 
-stage_2_combined_mother_weather <- left_join(stage_2_combined_mother, zurich_weather_jan_till_may_2023, by = "day_of_year")
+by <- join_by(day_of_year, year == year)
+stage_2_combined_mother_weather <- left_join(stage_2_combined_mother, weather_zh_2023, by = by)
 
 # drop not relevant columns
 stage_2_for_analysis <- stage_2_combined_mother_weather %>%
-  select(-c(17:26))
+  select(-c(18:26))
 
 ### export DF for stage 2
 write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.csv")
 
+
+
+#### Time 2 To 5 ####
