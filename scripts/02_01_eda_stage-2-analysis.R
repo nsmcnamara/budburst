@@ -43,7 +43,7 @@ ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2
 
 
 ### Growing Degree Days ####
-### GDD above 5 by Species
+### GDD above 5 by Species until Stage 2
 gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
        mapping = aes(gdd_above_5, ..density.., 
                      fill = species)) +
@@ -51,7 +51,8 @@ gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
   facet_wrap( ~species, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
   theme_bw() +
-  labs(title = "GDD above 5, split by Species, all cohorts combined",
+  labs(title = "GDD above 5 until Stage 2",
+      subtitle = "split by Species, all Cohorts combined",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Species")
@@ -79,7 +80,8 @@ gdd_above_5_petraea_by_site <- stage_2_for_analysis %>%
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 for Q. petraea, split by Site, all cohorts combined",
+  labs(title = "GDD above 5 until Stage 2 for Q. petraea",
+       subtitle = "split by Site, all Cohorts combined",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Site name") +
@@ -104,16 +106,17 @@ gdd_above_5_petraea_by_site_and_cohort <- stage_2_for_analysis %>%
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  theme_bw() +
-  labs(title = "GDD above 5 for Q. petraea, split by Site and Cohort",
+  labs(title = "GDD above 5 until Stage 2 for Q. petraea",
+       subtitle = "split by Site, coloured by Cohort",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Cohort") +
-  xlim(100, 400)
+  xlim(100, 400) +
+  ylim(0, 0.1)
 
 gdd_above_5_petraea_by_site_and_cohort
 ggsave(filename = "gdd_above_5_petraea_by_site_and_cohort.png", 
-       device = png, width = 5,
+       device = png, width = 5, height = 5,
        plot = gdd_above_5_petraea_by_site_and_cohort,
        path = "output/figs")
 
@@ -132,7 +135,8 @@ gdd_above_5_pubescens_by_site <- stage_2_for_analysis %>%
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 for Q. pubescens, split by Site, all cohorts",
+  labs(title = "GDD above 5 until Stage 2 for Q. pubescens",
+      subtitle = "split by Site, all Cohorts",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Site name") +
@@ -157,15 +161,17 @@ gdd_above_5_pubescens_by_site_and_cohort <- stage_2_for_analysis %>%
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 for Q. pubescens, split by Site and Cohort",
+  labs(title = "GDD above 5 until Stage 2 for Q. pubescens", 
+       subtitle = "split by Site and Cohort",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Cohort") +
-  xlim(100, 400)
+  xlim(100, 400) +
+  ylim(0, 0.1)
 
 gdd_above_5_pubescens_by_site_and_cohort
 ggsave(filename = "gdd_above_5_pubescens_by_site_and_cohort.png", 
-       device = png, width = 5,
+       device = png, width = 5, height = 8,
        plot = gdd_above_5_pubescens_by_site_and_cohort,
        path = "output/figs")
 
@@ -181,7 +187,8 @@ gdd_above_5_robur_by_site <- stage_2_for_analysis %>%
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set3") +
-  labs(title = "GDD above 5 for Q. robur, split by Site, all cohorts",
+  labs(title = "GDD above 5 until Stage 2 for Q. robur", 
+       subtitle = "split by Site, all Cohorts",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Site name") +
@@ -206,15 +213,18 @@ gdd_above_5_robur_by_site_and_cohort <- stage_2_for_analysis %>%
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 for Q. robur, split by Site and Cohort",
+  labs(title = "GDD above 5 until Stage 2 for Q. robur", 
+       subtitle = "split by Site and Cohort",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Cohort") +
-  xlim(100, 400)
+  xlim(100, 400) +
+  ylim(0, 0.1)
+
 
 gdd_above_5_robur_by_site_and_cohort
 ggsave(filename = "gdd_above_5_robur_by_site_and_cohort.png", 
-       device = png, width = 5,
+       device = png, width = 5, height = 10,
        plot = gdd_above_5_robur_by_site_and_cohort,
        path = "output/figs")
 
