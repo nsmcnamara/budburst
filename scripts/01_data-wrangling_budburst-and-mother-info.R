@@ -72,7 +72,8 @@ zurich_weather_jan_till_may_2023 <- zurich_weather_jan_till_may_2023 %>%
   # calculate temp above 5 degrees per day
   mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0)) %>%
   # cumulative temp
-  mutate(gdd_above_5 = cumsum(mean_temp_above_5))
+  mutate(gdd_above_5 = cumsum(mean_temp_above_5)) %>%
+  mutate(gdd_above_0 = cumsum(MESSWERT_mean))
 
 
   
