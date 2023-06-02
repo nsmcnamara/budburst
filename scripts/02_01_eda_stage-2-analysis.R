@@ -31,7 +31,7 @@ doy_stage_2_by_species <- ggplot(stage_2_for_analysis,
   facet_wrap(~species, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
   theme_bw() +
-  labs(title = "DOY Stage 2, split by Species",
+  labs(title = "DOY Stage 2, split by Species, all cohorts combined",
        x = "DOY Stage 2",
        y = "Frequency",
        fill = "Species")
