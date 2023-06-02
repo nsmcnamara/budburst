@@ -1,6 +1,6 @@
 ### Data import, cleaning and transformation for budburst scoring and information from mother trees.
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-05-31
+### Last update:  2023-06-02
 ### Simone McNamara
 
 

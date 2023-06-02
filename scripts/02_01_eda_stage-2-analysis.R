@@ -77,7 +77,7 @@ ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5,
 ## make a plot of doy by site_name
 q_robur <- filter(stage_2_for_analysis, species == "Q.robur")
 
-ggplot(q_robur, aes(x = site_name, y = cum_temp_above_5, 
+ggplot(q_robur, aes(x = reorder(site_name, site_wet), y = cum_temp_above_5, 
                                  colour = site_name, fill = site_name, alpha = 0.5)) +
   ggdist::stat_halfeye(
     adjust = 0.5,
@@ -105,7 +105,42 @@ ggplot(q_robur, aes(x = site_name, y = cum_temp_above_5,
   labs(x = "Site name",
        y = "Growing Degree Days") +
   scale_alpha(guide = "none") +
-  labs(fill = "Site", colour = "Site")
+  labs(fill = "Site", colour = "Site") +
+  facet_wrap( ~ age)
 
 
+acorns_only <- subset(stage_2_for_analysis, stage_2_for_analysis$age == 2)
 
+
+ggplot(q_robur, aes(x = reorder(site_name, altitude), y = cum_temp_above_5, 
+                                 colour = site_name, fill = site_name, alpha = 0.5)) +
+  ggdist::stat_halfeye(
+    adjust = 0.5,
+    width = 0.6,
+    justification = -.2,
+    .width = 0,
+    point_colour = NA
+  ) +
+  geom_boxplot(
+    width = .12,
+    show.legend = FALSE
+  ) +
+  ggdist::stat_dots(
+    position = "dodge",
+    scale = 0.5,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    show.legend = FALSE
+  ) +
+  coord_cartesian(xlim = c(1.2, NA)) +
+  scale_y_continuous(breaks = seq(100, 400, 50)) +
+  theme_bw() +
+  theme(legend.position = c(0.9, 0.9)) +
+  theme(axis.text = element_text(angle = 90)) +
+  labs(x = "Species",
+       y = "Growing Degree Days",
+       colour = "Species") +
+  scale_alpha(guide = "none") +
+  labs(fill = "Species", colour = "Species") +
+  facet_wrap( ~ age)
