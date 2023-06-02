@@ -51,7 +51,7 @@ gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
   facet_wrap( ~species, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
   theme_bw() +
-  labs(title = "GDD above 5, split by Species",
+  labs(title = "GDD above 5, split by Species, all cohorts combined",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Species")
