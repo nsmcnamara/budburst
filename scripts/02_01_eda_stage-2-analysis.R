@@ -79,7 +79,7 @@ gdd_above_5_petraea_by_site <- stage_2_for_analysis %>%
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 for Q. petraea, split by Site",
+  labs(title = "GDD above 5 for Q. petraea, split by Site, all cohorts combined",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Site name") +
