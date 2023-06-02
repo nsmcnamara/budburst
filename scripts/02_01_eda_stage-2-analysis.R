@@ -23,20 +23,28 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 #### First Data Viz ####
 #### Distributions of Variable ####
 
-### DOY By Species
+### DOY by Species
 doy_stage_2_by_species <- ggplot(stage_2_for_analysis, mapping = aes(doy_stage_2, ..density.., fill = species, alpha = 0.5)) +
   geom_histogram(bins = 14) +
   facet_wrap(~species, ncol = 1)
+
+doy_stage_2_by_species
 ### +/- 120 days for stage 2
+
 ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
 
 
 ### GDD above 5 by Species
-ggplot(stage_2_for_analysis,
-       mapping = aes(cum_temp_above_5, ..density.., fill = species, alpha = 0.5)) +
-  geom_histogram(bins = 12) +
-#  geom_density() +
+gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
+       mapping = aes(gdd_above_5, ..density.., fill = species, alpha = 0.5)) +
+  geom_histogram(bins = 14) +
   facet_wrap( ~species, ncol = 1)
+
+gdd_above_5_by_species
+### pubescens first, petraea second, robur third, all around 200
+
+ggsave(filename = "gdd_above_5_by_species.png", device = png, plot = gdd_above_5_by_species, path = "output/figs")
+
 
 ### QQ Plot
 qqnorm(stage_2_for_analysis$cum_temp_above_5)
