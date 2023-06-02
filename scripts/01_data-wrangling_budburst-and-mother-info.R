@@ -56,13 +56,30 @@ budburst_zh23_transformed <- budburst_zh23_clean %>%
 ### Importing budburst data from 2022
 budburst_zh22 <- read.csv("~/budburst/data/processed/budburst-zurich-2022.csv", stringsAsFactors=TRUE)
 
-
 ## Checking out the data
 glimpse(budburst_zh22)
 ## Checking NAs
 budburst_zh22 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
+
+### Cleaning the data
+## Remove unwanted rows
+# drop na and remove dead
+budburst_zh22_clean <- budburst_zh22 %>%
+  drop_na(budburst_score)  %>%
+  filter(notes_2022 != "DEAD") %>%
+  filter(notes_2022 != "MISSING")
+
+
+# check how many acorns were removed
+budburst_zh22 %>%
+  summarise(n_distinct(acorn_id))
+budburst_zh22_clean %>%
+  summarise(n_distinct(acorn_id))
+### total acorns planted: 366
+### total acorns measured: 356
+### total acorns dropped: 10
 
 
 
