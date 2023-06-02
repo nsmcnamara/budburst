@@ -10,7 +10,7 @@ library(tidyverse)
 
 
 #### Budburst 23 ####
-### Importing budburst scoring
+### Importing budburst data from 2023
 budburst <- read.csv("~/budburst/data/processed/budburst-zurich.csv", stringsAsFactors=TRUE)
 
 
@@ -21,17 +21,14 @@ budburst %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
 
-#### Transforming the data
+### Cleaning the data
 ## Remove unwanted rows
-# drop na
+# drop na and remove dead
 budburst_clean <- budburst %>%
-  drop_na(budburst_score)
-
-# remove dead
-budburst_clean <- budburst_clean %>%
+  drop_na(budburst_score)  %>%
   filter(notes_2023 != "DEAD")
 
-## check how many acorns were dropped
+# check how many acorns were removed
 budburst %>%
   summarise(n_distinct(acorn_id))
 budburst_clean %>%
@@ -41,15 +38,15 @@ budburst_clean %>%
 ### total acorns dropped: 361
 
 
-## make new column with date as day of year
-budburst <- budburst %>%
+### Transforming the data
+budburst_transformed <- budburst_clean %>%
+  # new column: changing date to day of year
   mutate(date = as.Date(date, format = "%d.%m.%y")) %>%
-  mutate(day_of_year = lubridate::yday(date))
-
-## add mother_id column for joining data frames
-# if starts with a K, remove this
-# then remove last two characters from all
-budburst <- budburst %>%
+  mutate(day_of_year = lubridate::yday(date)) %>%
+  
+  ## add mother_id column for joining data frames
+  # if starts with a K, remove this
+  # then remove last two characters from all
   mutate(mother_id = case_when(str_detect(acorn_id, "K") ~ str_sub(acorn_id, 3, str_length(acorn_id)),
                                TRUE ~ acorn_id)) %>%
   mutate(mother_id = str_sub(mother_id, 1, -3))
