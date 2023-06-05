@@ -38,3 +38,10 @@ ggplot(data = weather_zh_2023_processed, aes(x = date, y = temp_mean, group = 1)
   geom_line() +
   geom_ribbon(aes(x = date, ymax = temp_max, ymin = temp_min), alpha = 0.3) +
   scale_x_date(date_breaks = "1 month", date_labels = "%B")
+
+
+### Cumulative Temp 2023 ####
+ggplot(data = weather_zh_2023_processed, aes(x = date, y = gdd_above_5, group = 1)) +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month", date_labels = "%B")
+
