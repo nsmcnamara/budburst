@@ -125,17 +125,27 @@ weather_zh_2022 %>%
 
 ### Transforming the data
 weather_zh_2023 <- weather_zh_2023 %>%
+  # rename columns to english
+  rename(date = MESSDAT) %>%
+  rename(temp_mean = MESSWERT_mean) %>%
+  rename(temp_max = MESSWERT_max) %>%
+  rename(temp_min = MESSWERT_min) %>%
   # Change date to DOY
-  mutate(date = as.character(MESSDAT)) %>%
+  mutate(date = as.character(date)) %>%
   mutate(date = clock::date_time_parse_RFC_3339(date)) %>%
   mutate(day_of_year = lubridate::yday(date)) %>%
   mutate(year = "2023") %>%
   # calculate temp above 5 degrees per day
-  mutate(mean_temp_above_5 = case_when(MESSWERT_mean >= 5 ~ MESSWERT_mean - 5, .default = 0)) %>%
+  mutate(mean_temp_above_5 = case_when(temp_mean >= 5 ~ temp_mean - 5, .default = 0)) %>%
   # cumulative temp
-  mutate(gdd_above_5 = cumsum(mean_temp_above_5))
+  mutate(gdd_above_5 = cumsum(mean_temp_above_5)) %>%
+  # drop irrelevant columns
+  select(-c(1:4))
 
 
+
+### export weather zurich 2023
+write_csv(weather_zh_2023, "~/budburst/data/processed/weather_zh_2023_processed.csv")
 
 
 #### Mother Info #####
