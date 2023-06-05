@@ -19,3 +19,9 @@ library(RColorBrewer)
 
 #### Data Import ####
 weather_zh_2023_processed <- read.csv("~/budburst/data/processed/weather_zh_2023_processed.csv", stringsAsFactors=TRUE)
+
+## Checking out the data
+glimpse(weather_zh_2023_processed)
+## Checking NA
+weather_zh_2023_processed %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
