@@ -24,8 +24,9 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 #### First Data Viz ####
 
 ### DOY by Species ####
+## histogram
 doy_stage_2_by_species <- ggplot(stage_2_for_analysis, 
-      mapping = aes(doy_stage_2, ..density.., 
+      mapping = aes(doy_stage_2, after_stat(density), 
                     fill = species)) +
   geom_histogram(bins = 14) +
   facet_wrap(~species, ncol = 1) +
@@ -40,6 +41,62 @@ doy_stage_2_by_species
 ### +/- 120 days for stage 2
 
 ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
+
+
+## density w boxplot
+ggplot(stage_2_for_analysis, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens", "Q.petraea"), 
+                                 y = doy_stage_2, 
+                                 colour = species, fill = species, alpha = 0.5)) +
+  ggdist::stat_halfeye(
+    breaks = 14,
+    adjust = 0.5,
+    width = 0.6,
+    justification = -.2,
+    .width = 0,
+    point_colour = NA,
+  ) +
+  geom_boxplot(
+    width = .12,
+    show.legend = FALSE
+  ) +
+  ggdist::stat_dots(
+#    position = "dodge",
+    scale = 0.4,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    show.legend = FALSE
+  ) +
+#  coord_cartesian(xlim = c(1.2, NA)) +
+  coord_flip(xlim = c(1.2, NA), ylim = NULL, expand = TRUE, clip = "on") +
+  scale_x_discrete(breaks = seq(100, 400, 50)) +
+  theme_bw() +
+  theme(legend.position = c(0.9, 0.8)) +
+  labs(x = "Species",
+       y = "DOY Stage 2",
+       colour = "Species") +
+  scale_alpha(guide = "none") +
+  labs(fill = "Species", colour = "Species") +
+  scale_fill_brewer(palette = "Set2") +
+  scale_color_brewer(palette = "Set2")
+
+
+##
+
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ### Growing Degree Days ####
@@ -227,10 +284,6 @@ ggsave(filename = "gdd_above_5_robur_by_site_and_cohort.png",
        device = png, width = 5, height = 10,
        plot = gdd_above_5_robur_by_site_and_cohort,
        path = "output/figs")
-
-
-
-
 
 
 
