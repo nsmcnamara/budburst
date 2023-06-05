@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Stage 2 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-02
+### Last update:  2023-06-05
 ### Simone McNamara
 
 #### Setup ####
@@ -20,6 +20,9 @@ str(stage_2_for_analysis)
 ### check NAs
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
+#
+Set2palette <- brewer.pal(8, "Set2")
+Dark2palette <- brewer.pal(8, "Dark2")
 
 #### First Data Viz ####
 
@@ -43,10 +46,19 @@ doy_stage_2_by_species
 ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
 
 
-## density w boxplot
+## raincloud
+# means by species
+means <- stage_2_for_analysis %>%
+  group_by(species) %>%
+  summarize(m = mean(doy_stage_2))
+counts <- stage_2_for_analysis %>%
+  group_by(species) %>%
+  summarise(n = n())
+
+# plot
 ggplot(stage_2_for_analysis, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens", "Q.petraea"), 
                                  y = doy_stage_2, 
-                                 colour = species, fill = species, alpha = 0.5)) +
+                                 colour = species, fill = species)) +
   ggdist::stat_halfeye(
     breaks = 14,
     adjust = 0.5,
@@ -54,40 +66,66 @@ ggplot(stage_2_for_analysis, aes(x = forcats::fct_relevel(species, "Q.robur", "Q
     justification = -.2,
     .width = 0,
     point_colour = NA,
+    alpha = 0.6,
+    show.legend = FALSE
   ) +
   geom_boxplot(
     width = .12,
+    alpha = 0.6,
     show.legend = FALSE
   ) +
   ggdist::stat_dots(
-#    position = "dodge",
+    position = "dodge",
     scale = 0.4,
     side = "left",
     dotsize = 1,
     justification = 1.2,
+    alpha = 0.6,
     show.legend = FALSE
   ) +
-#  coord_cartesian(xlim = c(1.2, NA)) +
-  coord_flip(xlim = c(1.2, NA), ylim = NULL, expand = TRUE, clip = "on") +
+  # annotate mean
+  annotate(
+    "text",
+    x = 3.5, 
+    y = 140,
+    label = paste("n = ", counts[1,2], "mean =", round(means[1,2],2)),
+    colour = Dark2palette[1]
+  ) +
+  annotate(
+    "text",
+    x = 2.5, 
+    y = 140,
+    label = paste("n = ", counts[2,2], "mean =", round(means[2,2],2)),
+    colour = Dark2palette[2]
+  ) +
+  annotate(
+    "text",
+    x = 1.5, 
+    y = 140,
+    label = paste("n = ", counts[3,2], "mean =", round(means[3,2],2)),
+    colour = Dark2palette[3]
+  ) +
+  coord_flip(xlim = c(1, NA), ylim = c(90, 180), expand = TRUE, clip = "on") +
   scale_x_discrete(breaks = seq(100, 400, 50)) +
   theme_bw() +
-  theme(legend.position = c(0.9, 0.8)) +
+  theme(legend.position = c(0.9, 0.2)) +
   labs(x = "Species",
        y = "DOY Stage 2",
        colour = "Species") +
   scale_alpha(guide = "none") +
   labs(fill = "Species", colour = "Species") +
   scale_fill_brewer(palette = "Set2") +
-  scale_color_brewer(palette = "Set2")
-
-
-##
-
-
-#
+  scale_color_brewer(palette = "Dark2")
 
 
 
+
+
+
+
+
+ #####
+ #####
 
 
 
