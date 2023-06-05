@@ -10,10 +10,12 @@ library(RColorBrewer)
 
 #### IDEA ####
 # plot mean, min and max temp jan till may (weather graph)
-# plot cumulative mean, min and max temp jan till may: gdd
+# plot cumulative gdd
 # include growth stage like here: https://www.arable.com/blog/a-guide-to-growing-degree-days-gdd-linking-temperature-and-crop-growth-stages/
 
-
-### Data import
+# data needed
 # weather
 # need avg date for stage 1/2/3/4/5 overall
+
+#### Data Import ####
+weather_zh_2023_processed <- read.csv("~/budburst/data/processed/weather_zh_2023_processed.csv", stringsAsFactors=TRUE)
