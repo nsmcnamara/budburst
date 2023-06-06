@@ -260,7 +260,6 @@ stage_2_for_analysis <- stage_2_combined_mother_weather %>%
 write_csv(stage_2_for_analysis, "~/budburst/data/processed/stage_2_for_analysis.csv")
 
 
-
 #### Time 2 To 5 ####
 ### calculate how many growing degree days from stage 2 to stage 5
 
@@ -299,8 +298,18 @@ stage_2_and_5_weather <- left_join(stage_2_and_5,
 gdd_2_to_5 <- stage_2_and_5_weather %>%
   rowwise() %>%
   mutate(gdd_2_to_5 = gdd_stage_5 - gdd_stage_2)
+
+
+# combine gdd_2_to_5 and mother info
+gdd_2_to_5_combined_mother <- left_join(gdd_2_to_5, mother_info, by = "mother_id")
+### 1134 observations
+# for 24 acorns, no mother info found (these arrived late and must be excluded from analysis)
+gdd_2_to_5_combined_mother <- gdd_2_to_5_combined_mother %>%
+  drop_na(species)
+### total: 1110 acorns for analysis
+
   
 
 ### export gdd_2_to_5
-write_csv(gdd_2_to_5, "~/budburst/data/processed/gdd_2_to_5.csv")
+write_csv(gdd_2_to_5_combined_mother, "~/budburst/data/processed/gdd_2_to_5_for_analysis.csv")
   
