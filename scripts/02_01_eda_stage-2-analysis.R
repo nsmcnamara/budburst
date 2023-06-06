@@ -9,6 +9,10 @@ library(tidyverse)
 library(GGally)
 library(RColorBrewer)
 
+# Palette
+Set2palette <- brewer.pal(8, "Set2")
+Dark2palette <- brewer.pal(8, "Dark2")
+
 #### Data Import ####
 stage_2_for_analysis <- read.csv("~/budburst/data/processed/stage_2_for_analysis.csv", stringsAsFactors=TRUE)
 
@@ -20,9 +24,7 @@ str(stage_2_for_analysis)
 ### check NAs
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
-#
-Set2palette <- brewer.pal(8, "Set2")
-Dark2palette <- brewer.pal(8, "Dark2")
+
 
 #### First Data Viz ####
 
@@ -83,25 +85,25 @@ ggplot(stage_2_for_analysis, aes(x = forcats::fct_relevel(species, "Q.robur", "Q
     alpha = 0.6,
     show.legend = FALSE
   ) +
-  # annotate mean
+  # annotate mean and n
   annotate(
     "text",
     x = 3.5, 
-    y = 140,
+    y = 170,
     label = paste("n = ", counts[1,2], "mean =", round(means[1,2],2)),
     colour = Dark2palette[1]
   ) +
   annotate(
     "text",
     x = 2.5, 
-    y = 140,
+    y = 170,
     label = paste("n = ", counts[2,2], "mean =", round(means[2,2],2)),
     colour = Dark2palette[2]
   ) +
   annotate(
     "text",
     x = 1.5, 
-    y = 140,
+    y = 170,
     label = paste("n = ", counts[3,2], "mean =", round(means[3,2],2)),
     colour = Dark2palette[3]
   ) +
