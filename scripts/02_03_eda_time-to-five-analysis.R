@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Time to 5 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-06
+### Last update:  2023-06-07
 ### Simone McNamara
 
 
@@ -45,11 +45,11 @@ sum_stats <- gdd_2_to_5_clean %>%
   group_by(species, site_name, age, latitude, longitude, altitude) %>%
   summarize(mean = mean(gdd_2_to_5))
 
-#### GDD 2 to 5 Q. petraea 
+#### GDD 2 to 5 Q. petraea ####
 gdd_2_to_5_clean %>%
   filter(species == "Q.petraea") %>%
-  filter(age == "3") %>%
-  ggplot(aes(x = site_name, 
+  filter(age == "2") %>%
+  ggplot(aes(x = reorder(site_name, altitude), 
             y = gdd_2_to_5, 
             colour = site_name, fill = site_name)) +
   ggdist::stat_halfeye(
@@ -87,3 +87,9 @@ gdd_2_to_5_clean %>%
   labs(fill = "Site", colour = "Site") +
   scale_fill_brewer(palette = "Set2") +
   scale_color_brewer(palette = "Dark2")
+
+
+gdd_2_to_5_clean %>%
+  select(gdd_2_to_5, species, altitude, latitude, longitude, cohort, site_wet) %>%
+  ggpairs(mapping = aes(color = species, alpha = 0.5))
+## altitude, latitude, longitude, correlated but also to gdd_2_to_5
