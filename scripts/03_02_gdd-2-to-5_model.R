@@ -31,8 +31,39 @@ df_gdd_2_to_5_clean <- df_gdd_2_to_5 %>%
   drop_na(gdd_2_to_5)
 # sanity check: 756 
 
+# split by species
+df_robur_only <- df_gdd_2_to_5_clean %>%
+  filter(species == "Q.robur")
+
 #### LMM ####
-model_gdd_2_to_5 <- lmer(gdd_2_to_5 ~ altitude + latitude + longitude + site_wet + cohort + (1|mother_id), 
-                         data = df_gdd_2_to_5_clean %>% filter(species == "Q.robur"))
-summary(model_gdd_2_to_5)
-anova(model_gdd_2_to_5, type = "3")
+#### ROBUR ONLY ####
+model_robur_gdd_2_to_5 <- lmer(gdd_2_to_5 ~ altitude + latitude + longitude + site_wet + cohort + (1|mother_id), 
+                         data = df_robur_only)
+summary(model_robur_gdd_2_to_5)
+anova(model_robur_gdd_2_to_5, type = "3")
+
+# check collinearity
+car::vif(model_robur_gdd_2_to_5)
+# altitude and latitude problematic
+
+df_robur_alt_lat <- df_robur_only %>%
+  select(altitude, latitude)
+
+# run PCA
+pca = prcomp(df_robur_alt_lat, scale = TRUE)
+pc_robur <- pca$x
+
+# latitude and altitude reduced to components pc1 and pc2. 
+# check proortion of variance explained by each
+# divide variance explained by each by variance explained by all
+pca$sdev^2 / sum(pca$sdev^2)
+# first component explains 855%, second component 15%
+
+df_robur_pc <- cbind(df_robur_only, pc_robur)
+
+#### LMM 2 ####
+model_robur_pc <- lmer(gdd_2_to_5 ~ PC1 + PC2 + longitude + site_wet + cohort + (1|mother_id), 
+                               data = df_robur_pc)
+summary(model_robur_pc)
+anova(model_robur_pc, type = "3")
+
