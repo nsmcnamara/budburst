@@ -13,7 +13,7 @@ library(RColorBrewer)
 # Palette
 Set2palette <- brewer.pal(8, "Set2")
 Dark2palette <- brewer.pal(8, "Dark2")
-
+my_pal <- c("#B14343", "#936E23","#6E8938","#0C420C","#24785C","#1D3643", "#436379", "#4E376C", "#B9679E","#ED6F6F")
 
 #### Data Import ####
 gdd_2_to_5 <- read.csv("~/budburst/data/processed/gdd_2_to_5_for_analysis.csv", stringsAsFactors=TRUE)
@@ -93,3 +93,7 @@ gdd_2_to_5_clean %>%
   select(gdd_2_to_5, species, altitude, latitude, longitude, cohort, site_wet) %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
 ## altitude, latitude, longitude, correlated but also to gdd_2_to_5
+
+
+
+#### Q. robur only ####
