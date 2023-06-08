@@ -38,7 +38,8 @@ numeric_gdd_s2 <- df_gdd_to_stage_2 %>%
 # Perform PCA
 # color by species
 pca_res <- prcomp(numeric_gdd_s2, scale. = TRUE)
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "species")
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "species", alpha = 0.5,
+              loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
 ggplotly(p)
 # species: no clear clustering
 p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "site_wet")
@@ -66,11 +67,41 @@ p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "gdd_above_5")
 ggplotly(p)
 # gdd_above_5: pattern left to right
 
+### turkish ones cluster together. altitude and latitude quite different here
+### separate and repeat
 
+df_gdd_s2_tk <- df_gdd_to_stage_2 %>%
+  filter(country == "Turkey ")
 
+df_gdd_s2_tk_num<- df_gdd_s2_tk %>%
+  select(altitude, latitude, doy_stage_2, gdd_above_5, age)
 
+# Perform PCA
+# color by species
+pca_tk_res <- prcomp(df_gdd_s2_tk_num)
 
+p <- autoplot(pca_tk_res, data = df_gdd_s2_turkey, colour = "site_name", alpha = 0.5,
+              loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
+ggplotly(p)
+# within turkey, altitude is the biggest factor.
 
+df_gdd_s2_isik <- df_gdd_to_stage_2 %>%
+  filter(site_name == "Işık Dağı")
+df_gdd_s2_isik_num <- df_gdd_s2_isik %>%
+  select(altitude, latitude, doy_stage_2, gdd_above_5, age)
+pca_isik_res <- prcomp(df_gdd_s2_isik_num)
+p <- autoplot(pca_isik_res, data = df_gdd_s2_isik, colour = "mother_id",
+              loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
+ggplotly(p)
+scores <- pca_isik_res$x
+pca_isik_df <- cbind(df_gdd_s2_isik, scores)
+
+ggplot(pca_isik_df, aes(PC1, PC2, colour = mother_id)) +
+  geom_point() +
+  stat_ellipse(geom = "polygon", aes(fill = mother_id),
+               alpha = 0.2,
+               show.legend = FALSE,
+               level = 0.95)
 
 
 #### ALL SPECIES ####
