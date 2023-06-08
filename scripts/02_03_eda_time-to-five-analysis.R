@@ -9,11 +9,23 @@
 library(tidyverse)
 library(GGally)
 library(RColorBrewer)
+library(ggrepel)
 
 # Palette
 Set2palette <- brewer.pal(8, "Set2")
 Dark2palette <- brewer.pal(8, "Dark2")
-my_pal <- c("#B14343", "#936E23","#6E8938","#0C420C","#24785C","#1D3643", "#436379", "#4E376C", "#B9679E","#ED6F6F")
+my_pal <- c(
+  "#AF2020",
+"#A57C29",
+"#638323",
+"#0C420C",
+"#1E7B5C",
+"#1B3643",
+"#71C0E5",
+"#713478",
+"#DE439C",
+"#FF6767")
+
 
 #### Data Import ####
 df_gdd_2_to_5 <- read.csv("~/budburst/data/processed/gdd_2_to_5_for_analysis.csv", stringsAsFactors=TRUE)
@@ -127,7 +139,7 @@ df_site_name_unique_robur <- distinct(df_robur_only, site_name, .keep_all = TRUE
 
 ggplot(data = df_robur_only, 
        mapping = aes(x = latitude, y = gdd_2_to_5, colour = site_name)) +
-  geom_point(size = 5, alpha = 0.5, position = position_dodge(width = 0.000000000000000000000000000005)) +
+  geom_point(size = 5, alpha = 0.5, position = position_dodge(width = 0.05)) +
   stat_summary(
     fun = mean,
     geom = "text",
@@ -145,10 +157,28 @@ ggplot(data = df_robur_only,
   scale_color_manual(values = my_pal) +
   geom_label_repel(data = df_site_name_unique_robur, aes(label = site_name))
 
+ggplot(data = df_robur_only, 
+       mapping = aes(x = reorder(site_name, latitude), y = gdd_2_to_5, colour = site_name)) +
+  geom_point(size = 5, alpha = 0.5, position = position_dodge(width = 0.05)) +
+  stat_summary(
+    fun = mean,
+    geom = "label",
+    aes(x = site_name, y = gdd_2_to_5, label = round(..y.., 2)),
+    size = 5,
+    color = "red",
+    show.legend = FALSE,
+    vjust = 0
+  ) +
+  scale_color_manual(values = my_pal) +
+#+ geom_label_repel(data = df_site_name_unique_robur, aes(label = site_name))
+  theme(
+  axis.text = element_text(angle = 45, hjust = 1)
+)
+
 ## LONGITUDE
 ggplot(data = df_robur_only, 
        mapping = aes(x = longitude, y = gdd_2_to_5, colour = site_name)) +
-  geom_point() +
+  geom_point(size = 3) +
   stat_summary(
     fun = mean,
     geom = "text",
