@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Stage 2 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-05
+### Last update:  2023-06-08
 ### Simone McNamara
 
 #### Setup ####
@@ -23,6 +23,88 @@ str(stage_2_for_analysis)
 
 ### check NAs
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
+
+df_gdd_to_stage_2 <- stage_2_for_analysis %>%
+  drop_na(gdd_above_5)
+
+#### PLOT THE DATA ####
+#### ALL SPECIES ####
+# ALL SPECIES BY AlTITUDE
+ggplot(data = df_gdd_to_stage_2,
+       mapping = aes(x = altitude, y = gdd_above_5,
+                     color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# slightly earlier gdd by stage 2 with increasing altitude, but doubt significance
+# ie the further up, the less warming required
+# compare w time to 5:
+# slightly longer gdd with increasing altitude, but doubt significance
+
+# ALL SPECIES BY LATITUDE
+ggplot(data = df_gdd_to_stage_2,
+       mapping = aes(x = latitude, y = gdd_above_5,
+                     color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# slightly later gdd by stage 2 with increasing latitude,
+# ie the further north, the more warming required
+# compare w time to 5:
+# shorter gdd with increasing latitude
+# ie the further north we go, the less warming is needed
+
+
+
+
+#### Q. ROBUR ####
+# ALL COHORTS BY LATITUDE
+df_gdd_to_stage_2 %>%
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# slightly later gdd by stage 2 with increasing latitude
+# ie the further north, the more warming required until budburst starts
+# same pattern as with all species
+# 
+
+# COHORTS SPLIT BY LATITUDE
+
+# ALL COHORTS BY ALTITUDE
+
+# COHORTS SPLIT BY ALTITUDE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
