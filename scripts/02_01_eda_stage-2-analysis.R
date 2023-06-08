@@ -8,6 +8,8 @@
 library(tidyverse)
 library(GGally)
 library(RColorBrewer)
+library(ggfortify)
+library(plotly)
 
 # Palette
 Set2palette <- brewer.pal(8, "Set2")
@@ -28,6 +30,49 @@ df_gdd_to_stage_2 <- stage_2_for_analysis %>%
   drop_na(gdd_above_5)
 
 #### PLOT THE DATA ####
+#### PCA ####
+# Filter only numeric columns
+numeric_gdd_s2 <- df_gdd_to_stage_2 %>% 
+  select(altitude, latitude, doy_stage_2, gdd_above_5, age)
+
+# Perform PCA
+# color by species
+pca_res <- prcomp(numeric_gdd_s2, scale. = TRUE)
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "species")
+ggplotly(p)
+# species: no clear clustering
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "site_wet")
+ggplotly(p)
+# site_wet: no clear clustering
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "cohort")
+ggplotly(p)
+# cohort: clear clustering
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "site_name")
+ggplotly(p)
+# site_name: clear clustering: seems turkish ones are different
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "country")
+ggplotly(p)
+# country: confirms, turkish ones are different
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "altitude")
+ggplotly(p)
+# altitude: clear clustering --> explains turkish ones?
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "latitude")
+ggplotly(p)
+# latitude: clear clustering --> explains turkish ones?
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "doy_stage_2")
+ggplotly(p)
+# doy_stage_2: pattern left to right
+p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "gdd_above_5")
+ggplotly(p)
+# gdd_above_5: pattern left to right
+
+
+
+
+
+
+
+
 #### ALL SPECIES ####
 # ALL SPECIES BY AlTITUDE
 ggplot(data = df_gdd_to_stage_2,
@@ -79,6 +124,22 @@ df_gdd_to_stage_2 %>%
 # ie the further north, the more warming required until budburst starts
 # same pattern as with all species
 # 
+
+# without Bosco Pantano
+df_gdd_to_stage_2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# pattern is reversed without Bosco Pantano
+# now pattern matches with Q. petraea
+# the further north, the less warming is required
 
 # COHORTS SPLIT BY LATITUDE
 
