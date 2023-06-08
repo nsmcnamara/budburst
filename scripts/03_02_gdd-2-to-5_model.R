@@ -60,6 +60,9 @@ pca$sdev^2 / sum(pca$sdev^2)
 # first component explains 855%, second component 15%
 
 df_robur_pc <- cbind(df_robur_only, pc_robur)
+ggplot(df_robur_pc,
+       mapping = aes(x = PC1, y = PC2, color = site_name)) +
+  geom_point(size = 3)
 
 #### LMM 2 ####
 model_robur_pc <- lmer(gdd_2_to_5 ~ PC1 + PC2 + longitude + site_wet + cohort + (1|mother_id), 
