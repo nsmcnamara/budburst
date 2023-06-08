@@ -12,8 +12,6 @@ library(RColorBrewer)
 library(ggrepel)
 
 # Palette
-Set2palette <- brewer.pal(8, "Set2")
-Dark2palette <- brewer.pal(8, "Dark2")
 my_pal <- c(
   "#AF2020",
 "#A57C29",
@@ -57,7 +55,133 @@ sum_stats <- df_gdd_2_to_5_clean %>%
   group_by(species, site_name, age, latitude, longitude, altitude) %>%
   summarize(mean = mean(gdd_2_to_5))
 
-#### GDD 2 to 5 Q. petraea ####
+#### PLOT THE DATA ####
+#### ALL SPECIES ####
+# ALL SPECIES BY AlTITUDE
+ggplot(data = df_gdd_2_to_5_clean,
+       mapping = aes(x = altitude, y = gdd_2_to_5,
+                     color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# slightly longer gdd with increasing altitude, but doubt significance
+
+# ALL SPECIES BY LATITUDE
+ggplot(data = df_gdd_2_to_5_clean,
+       mapping = aes(x = latitude, y = gdd_2_to_5,
+                     color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# shorter gdd with increasing latitude
+# ie the further north we go, the less warming is needed
+
+# ALL SPECIES BY LONGITUDE
+ggplot(data = df_gdd_2_to_5_clean,
+       mapping = aes(x = longitude, y = gdd_2_to_5,
+                     color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# increasing gdd with increasing longitude
+# ie the further east we go, the more warming required
+
+
+
+#### Q. PETRAEA ####
+# ALL COHORTS BY LATITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# shorter gdd with increasing latitude
+# ie the further north we go, the less warming is needed
+# same pattern as for all species
+
+# COHORTS SPLIT BY LATITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  ) +
+  facet_wrap(~ cohort)
+# shorter gdd with increasing latitude
+# ie the further north we go, the less warming is needed
+# same pattern as for all species
+# BUT: kizilcahamam is at 1454
+# but pattern also holds for 3yo withou kizilcahamam
+
+# ALL COHORTS BY ALTITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# longer gdd with increasing altitude
+# ie the further up we go, the more warming is needed
+# same pattern as for all species
+# BUT: SEE ABOVE 
+
+# COHORTS SPLIT BY ALTITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  ) +
+  facet_wrap(~ cohort)
+# shorter gdd with increasing latitude
+# ie the further north we go, the less warming is needed
+# same pattern as for all species
+# BUT: kizilcahamam is at 1454
+# but pattern also holds for 3yo withou kizilcahamam
+
+# this matches findings by Ducousso et al 1995
+# https://www.afs-journal.org/articles/forest/pdf/1996/02/AFS_0003-4312_1996_53_2-3_ART0053.pdf
+# Therefore the latest origins are more tolerant to frost by avoidance and resistance. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### GDD 2 to 5 Q. petraea ###
 df_gdd_2_to_5_clean %>%
   filter(species == "Q.petraea") %>%
   filter(age == "2") %>%
