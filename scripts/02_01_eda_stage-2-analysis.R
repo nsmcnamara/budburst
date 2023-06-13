@@ -41,7 +41,12 @@ df_gdd_s2 <- stage_2_for_analysis %>%
 #### PLOT THE DATA ####
 #### Dist of Single Variables ####
 #### DOY ####
-mean_doy_s2 <- mean(df_doy_s2$doy_stage_2)
+sumstat_doy_s2_all <- df_doy_s2 %>%
+  summarize(n = n(),
+            m = mean(doy_stage_2), 
+            var = var(doy_stage_2),
+            sd = sd(doy_stage_2))
+
 ## DOY by ALL ##
 doy_stage_2_all <- ggplot(data = df_doy_s2, 
                           mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
@@ -52,23 +57,28 @@ doy_stage_2_all <- ggplot(data = df_doy_s2,
        x = "DOY Stage 2",
        y = "Frequency")
 
+# print
 doy_stage_2_all
 ### +/- 120 days for stage 2
+
+# save
 ggsave(filename = "doy_s2_all.png", device = png, plot = doy_stage_2_all, path = "output/figs")
-mean(df_doy_s2$doy_stage_2)
-var(df_doy_s2$doy_stage_2)
+
 
 ## DOY by Species ##
 ## histogram
-means_doy_s2_by_species <- stage_2_for_analysis %>%
+sumstat_doy_s2_by_species <- df_doy_s2 %>%
   group_by(species) %>%
-  summarize(m = mean(doy_stage_2))
+  summarize(n = n(),
+            m = mean(doy_stage_2), 
+            var = var(doy_stage_2),
+            sd = sd(doy_stage_2))
 
-doy_stage_2_by_species <- ggplot(stage_2_for_analysis, 
+doy_s2_by_species <- ggplot(df_doy_s2, 
                                  mapping = aes(doy_stage_2, 
-                                               fill = species)) +
+                                               fill = species, alpha = 0.7)) +
   geom_histogram(bins = 20) +
-  geom_vline(data = means_doy_s2_by_species, aes(xintercept = m, color = species)) +
+  geom_vline(data = sumstat_doy_s2_by_species, aes(xintercept = m, color = species)) +
   facet_wrap(~species, ncol = 1) +
   scale_fill_manual(values = my_pal) +
   scale_color_manual(values = my_pal) +
@@ -76,14 +86,20 @@ doy_stage_2_by_species <- ggplot(stage_2_for_analysis,
   labs(title = "DOY Stage 2, split by Species, all cohorts combined",
        x = "DOY Stage 2",
        y = "Frequency",
-       fill = "Species",
-       caption = "All three species show a very similar distribution. Mean values are 118.6, 117.6, 117.4 for petraea, pubescens and robur, respectively")
+       caption = "All three species show a very similar distribution. 
+       Mean values are 118.6, 117.6, 117.4 for petraea, pubescens and robur, respectively.") +
+  guides(alpha = "none", color = "none", fill = "none")
 
-doy_stage_2_by_species
-ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
+# print
+doy_s2_by_species
+
+# save
+ggsave(filename = "doy_s2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
 
 ### very similar distributions.
 ### +/- 120 days for stage 2
+
+
 
 #### DOY 2023 ####
 # since so far I only have weather data for 2023 and I want to compare doy and gdd,
@@ -92,8 +108,29 @@ ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2
 
 
 #### GDD ####
+### GDD all
+mean_gdd_s2_all <- mean(df_gdd_s2$gdd_above_5)
+## DOY by ALL ##
+gdd_s2_all <- ggplot(data = df_gdd_s2, 
+                          mapping = aes(gdd_above_5, after_stat(density), alpha = 0.8)) +
+  geom_histogram(bins = 14) +
+  geom_vline(xintercept = mean_gdd_s2_all, color = "red") +
+  theme_bw() +
+  labs(title = "GDD Stage 2, all",
+       x = "GDD Stage 2",
+       y = "Frequency")
+
+gdd_s2_all
+### +/- 200 gdd for stage 2
+ggsave(filename = "gdd_s2_all.png", device = png, plot = gdd_s2_all, path = "output/figs")
+mean(df_gdd_s2$gdd_above_5)
+var(df_gdd_s2$gdd_above_5)
+sd(df_gdd_s2$gdd_above_5)
+
+  
+  
 ### GDD above 5 by Species until Stage 2
-gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
+gdd5_by_species <- ggplot(stage_2_for_analysis,
                                  mapping = aes(gdd_above_5, 
                                                fill = species)) +
   geom_histogram(bins = 20) +
@@ -195,7 +232,7 @@ ggplot(pca_isik_df, aes(PC1, PC2, colour = mother_id)) +
 
 #### ALL SPECIES ####
 # ALL SPECIES BY AlTITUDE
-ggplot(data = df_gdd_to_stage_2 %>%
+ggplot(data = df_gdd_s2 %>%
          filter(site_name != "Bosco_Pantano"),
        mapping = aes(x = altitude, y = gdd_above_5,
                      color = site_name)) +
@@ -212,7 +249,7 @@ ggplot(data = df_gdd_to_stage_2 %>%
 # slightly longer gdd with increasing altitude, but doubt significance
 
 # ALL SPECIES BY LATITUDE
-ggplot(data = df_gdd_to_stage_2,
+ggplot(data = df_gdd_s2,
        mapping = aes(x = latitude, y = gdd_above_5,
                      color = site_name)) +
   geom_point() +
@@ -232,7 +269,7 @@ ggplot(data = df_gdd_to_stage_2,
 
 #### Q. ROBUR ####
 # ALL COHORTS BY LATITUDE
-df_gdd_to_stage_2 %>%
+df_gdd_s2 %>%
   filter(species == "Q.robur") %>%
   ggplot(mapping = aes(x = latitude, y = gdd_above_5,
                        color = site_name)) +
@@ -248,24 +285,39 @@ df_gdd_to_stage_2 %>%
 # 
 
 # without Bosco Pantano
-df_gdd_to_stage_2 %>%
+df_gdd_s2 %>%
   filter(species == "Q.robur") %>%
   filter(site_name != "Bosco_Pantano") %>%
+  filter(site_name != "Schönberg_am_Kamp") %>%
+  filter(site_name != "Diendorf_am_Walde") %>%
+  filter(site_name != "Planck_am_Kamp") %>%
+  filter(site_name != "Laveyron(Tarbes/landouc)") %>%
+  
   ggplot(mapping = aes(x = latitude, y = gdd_above_5,
-                       color = site_name)) +
-  geom_point() +
+                       color = reorder(site_name, latitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
   geom_smooth(
     method = "lm",
     se = FALSE,
-    color = "blue"
-  )
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.robur",
+       x = "Latitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal[c(1,2,5,6,8)]) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+
 # pattern is reversed without Bosco Pantano
 # now pattern matches with TIME TO 5 Q. petraea
 # the further north, the less warming is required
 
 # COHORTS SPLIT BY LATITUDE
 # bosco pantano removed
-df_gdd_to_stage_2 %>%
+df_gdd_s2 %>%
   filter(species == "Q.robur") %>%
   filter(site_name != "Bosco_Pantano") %>%
 # filter(age == "2") %>%
@@ -534,20 +586,23 @@ ggsave(filename = "gdd_above_5_pubescens_by_site.png",
 gdd_above_5_pubescens_by_site_and_cohort <- stage_2_for_analysis %>% 
   filter(species == "Q.pubescens") %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = cohort)) +
+                       fill = cohort, alpha = 0.7)) +
   geom_histogram(bins = 40, position = "dodge", colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
+  scale_fill_manual(values = my_pal[c(1,7)]) +
   labs(title = "GDD above 5 until Stage 2 for Q. pubescens", 
        subtitle = "split by Site and Cohort",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Cohort") +
   xlim(100, 400) +
-  ylim(0, 0.1)
+  ylim(0, 0.1) +
+  scale_alpha(guide = "none") +
+  theme_bw()
 
 gdd_above_5_pubescens_by_site_and_cohort
+
 ggsave(filename = "gdd_above_5_pubescens_by_site_and_cohort.png", 
        device = png, width = 5, height = 8,
        plot = gdd_above_5_pubescens_by_site_and_cohort,
