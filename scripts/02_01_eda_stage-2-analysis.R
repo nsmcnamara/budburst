@@ -7,13 +7,21 @@
 # libraries
 library(tidyverse)
 library(GGally)
-library(RColorBrewer)
 library(ggfortify)
 library(plotly)
 
 # Palette
-Set2palette <- brewer.pal(8, "Set2")
-Dark2palette <- brewer.pal(8, "Dark2")
+my_pal <- c(
+  "#AF2020",
+  "#A57C29",
+  "#638323",
+  "#0C420C",
+  "#1E7B5C",
+  "#1B3643",
+  "#71C0E5",
+  "#713478",
+  "#DE439C",
+  "#FF6767")
 
 #### Data Import ####
 stage_2_for_analysis <- read.csv("~/budburst/data/processed/stage_2_for_analysis.csv", stringsAsFactors=TRUE)
@@ -26,10 +34,88 @@ str(stage_2_for_analysis)
 ### check NAs
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
-df_gdd_to_stage_2 <- stage_2_for_analysis %>%
+df_doy_s2 <- stage_2_for_analysis
+df_gdd_s2 <- stage_2_for_analysis %>%
   drop_na(gdd_above_5)
 
 #### PLOT THE DATA ####
+#### Dist of Single Variables ####
+#### DOY ####
+mean_doy_s2 <- mean(df_doy_s2$doy_stage_2)
+## DOY by ALL ##
+doy_stage_2_all <- ggplot(data = df_doy_s2, 
+                          mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
+  geom_histogram(bins = 20) +
+  geom_vline(xintercept = mean_doy_s2, color = "red") +
+  theme_bw() +
+  labs(title = "DOY Stage 2, all",
+       x = "DOY Stage 2",
+       y = "Frequency")
+
+doy_stage_2_all
+### +/- 120 days for stage 2
+ggsave(filename = "doy_s2_all.png", device = png, plot = doy_stage_2_all, path = "output/figs")
+mean(df_doy_s2$doy_stage_2)
+var(df_doy_s2$doy_stage_2)
+
+## DOY by Species ##
+## histogram
+means_doy_s2_by_species <- stage_2_for_analysis %>%
+  group_by(species) %>%
+  summarize(m = mean(doy_stage_2))
+
+doy_stage_2_by_species <- ggplot(stage_2_for_analysis, 
+                                 mapping = aes(doy_stage_2, 
+                                               fill = species)) +
+  geom_histogram(bins = 20) +
+  geom_vline(data = means_doy_s2_by_species, aes(xintercept = m, color = species)) +
+  facet_wrap(~species, ncol = 1) +
+  scale_fill_manual(values = my_pal) +
+  scale_color_manual(values = my_pal) +
+  theme_bw() +
+  labs(title = "DOY Stage 2, split by Species, all cohorts combined",
+       x = "DOY Stage 2",
+       y = "Frequency",
+       fill = "Species",
+       caption = "All three species show a very similar distribution. Mean values are 118.6, 117.6, 117.4 for petraea, pubescens and robur, respectively")
+
+doy_stage_2_by_species
+ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
+
+### very similar distributions.
+### +/- 120 days for stage 2
+
+#### DOY 2023 ####
+# since so far I only have weather data for 2023 and I want to compare doy and gdd,
+# I should have the same plot as above but for 2023 only.
+
+
+
+#### GDD ####
+### GDD above 5 by Species until Stage 2
+gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
+                                 mapping = aes(gdd_above_5, 
+                                               fill = species)) +
+  geom_histogram(bins = 20) +
+  facet_wrap( ~species, ncol = 1) +
+  scale_fill_manual(values = my_pal) +
+  theme_bw() +
+  labs(title = "GDD above 5 until Stage 2 (Start of Budburst)",
+       subtitle = "split by Species, all Cohorts combined",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Species")
+
+gdd_above_5_by_species
+### all around 200
+
+ggsave(filename = "gdd_above_5_by_species.png", device = png, plot = gdd_above_5_by_species, path = "output/figs")
+
+
+
+
+############
+############
 #### PCA ####
 # Filter only numeric columns
 numeric_gdd_s2 <- df_gdd_to_stage_2 %>% 
@@ -103,10 +189,14 @@ ggplot(pca_isik_df, aes(PC1, PC2, colour = mother_id)) +
                show.legend = FALSE,
                level = 0.95)
 
+### revealed nothing really, other than that Turkish ones are a bit different
+# because their distribution in terms of altitude is really quite different
+
 
 #### ALL SPECIES ####
 # ALL SPECIES BY AlTITUDE
-ggplot(data = df_gdd_to_stage_2,
+ggplot(data = df_gdd_to_stage_2 %>%
+         filter(site_name != "Bosco_Pantano"),
        mapping = aes(x = altitude, y = gdd_above_5,
                      color = site_name)) +
   geom_point() +
@@ -116,7 +206,8 @@ ggplot(data = df_gdd_to_stage_2,
     color = "blue"
   )
 # slightly earlier gdd by stage 2 with increasing altitude, but doubt significance
-# ie the further up, the less warming required
+# ie the further up, the less warming required to start budburst
+# much more pronounced w/o Bosco Pantano
 # compare w time to 5:
 # slightly longer gdd with increasing altitude, but doubt significance
 
@@ -134,7 +225,7 @@ ggplot(data = df_gdd_to_stage_2,
 # ie the further north, the more warming required
 # compare w time to 5:
 # shorter gdd with increasing latitude
-# ie the further north we go, the less warming is needed
+# ie the further north we go, the less warming is needed to complete budburst
 
 
 
@@ -169,15 +260,67 @@ df_gdd_to_stage_2 %>%
     color = "blue"
   )
 # pattern is reversed without Bosco Pantano
-# now pattern matches with Q. petraea
+# now pattern matches with TIME TO 5 Q. petraea
 # the further north, the less warming is required
 
 # COHORTS SPLIT BY LATITUDE
+# bosco pantano removed
+df_gdd_to_stage_2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+# filter(age == "2") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  ) +
+  facet_wrap(~cohort)
+# can't really say anything about the 3 year 
 
 # ALL COHORTS BY ALTITUDE
+df_gdd_to_stage_2 %>%
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# without Bosco Pantano
+df_gdd_to_stage_2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# again, the pattern changes w/o Bosco Pantano
+# now, less warming required for higher altitudes
 
 # COHORTS SPLIT BY ALTITUDE
-
+# bosco pantano removed
+df_gdd_to_stage_2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  # filter(age == "2") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  ) +
+  facet_wrap(~cohort)
 
 
 
@@ -202,24 +345,6 @@ df_gdd_to_stage_2 %>%
 
 #### First Data Viz ####
 
-### DOY by Species ####
-## histogram
-doy_stage_2_by_species <- ggplot(stage_2_for_analysis, 
-      mapping = aes(doy_stage_2, after_stat(density), 
-                    fill = species)) +
-  geom_histogram(bins = 14) +
-  facet_wrap(~species, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
-  theme_bw() +
-  labs(title = "DOY Stage 2, split by Species, all cohorts combined",
-       x = "DOY Stage 2",
-       y = "Frequency",
-       fill = "Species")
-
-doy_stage_2_by_species
-### +/- 120 days for stage 2
-
-ggsave(filename = "doy_stage_2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
 
 
 ## raincloud
@@ -313,25 +438,7 @@ ggplot(stage_2_for_analysis, aes(x = forcats::fct_relevel(species, "Q.robur", "Q
 
 
 
-### Growing Degree Days ####
-### GDD above 5 by Species until Stage 2
-gdd_above_5_by_species <- ggplot(stage_2_for_analysis,
-       mapping = aes(gdd_above_5, ..density.., 
-                     fill = species)) +
-  geom_histogram(bins = 14) +
-  facet_wrap( ~species, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
-  theme_bw() +
-  labs(title = "GDD above 5 until Stage 2",
-      subtitle = "split by Species, all Cohorts combined",
-       x = "Growing Degree Days",
-       y = "Frequency",
-       fill = "Species")
 
-gdd_above_5_by_species
-### pubescens first, petraea second, robur third, all around 200
-
-ggsave(filename = "gdd_above_5_by_species.png", device = png, plot = gdd_above_5_by_species, path = "output/figs")
 
 #### Petraea ####
 ### GDD above 5 for Q.petraea by site
@@ -630,3 +737,154 @@ ggplot(q_robur, aes(x = reorder(site_name, altitude), y = cum_temp_above_5,
   scale_alpha(guide = "none") +
   labs(fill = "Species", colour = "Species") +
   facet_wrap( ~ age)
+
+
+### pubescens ###
+# 4 northern provenances of clim10, 4 southern of clim 13
+# 4 northern by altitude: B-moist 236, B-dry 315, /// E-dry 560, E-wet 630
+# 4 southern by altitude: Kurt-wet 920, Konya-wet(Ilgin) 1180, Konya-dry 1200, Isik-dry 1420
+# matched pairs Kurt-Isik // Konya-Konya
+# by latitude: Konya, Konya, Kurt, Isik, E, E, B, B
+stage_2_for_analysis %>%
+  filter(species == "Q.pubescens") %>%
+  filter(age == 3) %>%
+  group_by(site_name) %>%
+  summarise(mean_doy = mean(doy_stage_2))
+
+Konya-O 112. dry. 1200 south-med
+Konya-I 115. wet. 1180 south-med
+Eger-m. 115. wet. 630. north-low
+Bitz_d  115. dry. 315  north-low 3y 2023
+Kurt    116. wet. 920. South-med
+büchs-m 116. wet. 236. north-low 3y 2023
+eger-m  116. wet. 630. north-low 3y 2023
+eger-d  117. dry. 560. north-low 3y 2023
+Eger-d. 119. dry. 560. north-low
+Büchs-m 119. wet. 236. north-low
+Isik    120. dry. 1400 south-high
+Bitz-d. 123. dry. 315  north-low
+
+
+
+stage_2_for_analysis %>%
+  filter(species == "Q.pubescens") %>%
+  filter(age == 3) %>%
+  group_by(site_name) %>%
+  summarise(mean_gdd = mean(gdd_above_5))
+
+konya-0 169
+konya-i 182
+kurt.   189
+isik    212
+
+at age 3
+b-dry 185
+b-wet 187
+e-wet 189
+e-dry 190
+
+stage_2_for_analysis %>%
+  filter(species == "Q.pubescens") %>%
+  filter(age == 2) %>%
+  group_by(site_name) %>%
+  summarise(n = n())
+
+
+### robur
+KG_robur %>%
+  dplyr::select(site_name, longitude, latitude, climate)
+
+stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  filter(cohort == "2023_3") %>%
+  group_by(site_name) %>%
+  summarise(mean_doy = mean(doy_stage_2))
+
+
+4 Schönberg_am_Kamp     108.  2022 2        350
+2 Bosco_Pantano         109.  2023 2  Csa   10
+4 Schönberg_am_Kamp     111.  2023_3        350
+1 Altenhof_am_Kamp      112.  2022 2        250  
+2 Diendorf_am_Walde     115.  2022 2        350
+3 Planck_am_Kamp        115.  2022 2        250
+1 Altenhof_am_Kamp      116.  2023_3        250
+10 Schönberg_am_Kamp    118.  2023 2        350
+5 Groane                119.  2023 2  Cfa   250
+8 Locarno               120.  2023 2        200
+2 Diendorf_am_Walde     120.  2023_3        350
+3 Planck_am_Kamp        120.  2023_3        250
+1 Altenhof_am_Kamp      121.  2023 2        250
+3 Cestas                122.  2023 2        50
+4 Diendorf_am_Walde     122.  2023 2        350
+6 Guca                  122.  2023 2        400
+7 Laveyron              122.  2023 2  Cfa   150
+9 Planck_am_Kamp        122.  2023 2        250
+
+
+4 Schönberg_am_Kamp     108.  2022 2        350
+4 Schönberg_am_Kamp     111.  2023_3        350
+1 Altenhof_am_Kamp      112.  2022 2        250  
+2 Diendorf_am_Walde     115.  2022 2        350
+3 Planck_am_Kamp        115.  2022 2        250
+1 Altenhof_am_Kamp      116.  2023_3        250
+10 Schönberg_am_Kamp    118.  2023 2        350
+2 Diendorf_am_Walde     120.  2023_3        350
+3 Planck_am_Kamp        120.  2023_3        250
+1 Altenhof_am_Kamp      121.  2023 2        250
+4 Diendorf_am_Walde     122.  2023 2        350
+9 Planck_am_Kamp        122.  2023 2        250
+
+
+4 Schönberg_am_Kamp     108.  2022 2        350
+1 Altenhof_am_Kamp      112.  2022 2        250  
+2 Diendorf_am_Walde     115.  2022 2        350
+3 Planck_am_Kamp        115.  2022 2        250
+
+4 Schönberg_am_Kamp     111.  2023_3        350
+1 Altenhof_am_Kamp      116.  2023_3        250
+2 Diendorf_am_Walde     120.  2023_3        350
+3 Planck_am_Kamp        120.  2023_3        250
+
+10 Schönberg_am_Kamp    118.  2023 2        350
+1 Altenhof_am_Kamp      121.  2023 2        250
+4 Diendorf_am_Walde     122.  2023 2        350
+9 Planck_am_Kamp        122.  2023 2        250
+
+
+stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  filter(cohort == "2023_3") %>%
+  group_by(site_name) %>%
+  summarise(mean_gdd = mean(gdd_above_5))
+
+10 Schönberg_am_Kamp            198.
+1 Altenhof_am_Kamp             212.
+9 Planck_am_Kamp               226.
+4 Diendorf_am_Walde            230.
+
+4 Schönberg_am_Kamp     171.
+1 Altenhof_am_Kamp      188.
+3 Planck_am_Kamp        208.
+2 Diendorf_am_Walde     214.
+
+
+DOY
+2 Bosco_Pantano         109.  2023 2  Csa   10
+5 Groane                119.  2023 2  Cfa   250
+8 Locarno               120.  2023 2        200
+3 Cestas                122.  2023 2        50
+6 Guca                  122.  2023 2        400
+7 Laveyron              122.  2023 2  Cfa   150
+
+stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  filter(cohort == "2023_2") %>%
+  group_by(site_name) %>%
+  summarise(mean_gdd = mean(gdd_above_5))
+
+2 Bosco_Pantano                164.
+5 Groane                       202.
+8 Locarno                      212.
+3 Cestas                       224.
+6 Guca                         224.
+7 Laveyron(Tarbes/landouc)     224.
