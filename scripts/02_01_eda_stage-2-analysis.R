@@ -1,7 +1,8 @@
 ### Exploratory Data Analysis for Stage 2 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-08
+### Last update:  2023-06-13
 ### Simone McNamara
+
 
 #### Setup ####
 # libraries
@@ -23,6 +24,8 @@ my_pal <- c(
   "#DE439C",
   "#FF6767")
 
+
+
 #### Data Import ####
 stage_2_for_analysis <- read.csv("~/budburst/data/processed/stage_2_for_analysis.csv", stringsAsFactors=TRUE)
 
@@ -38,16 +41,22 @@ df_doy_s2 <- stage_2_for_analysis
 df_gdd_s2 <- stage_2_for_analysis %>%
   drop_na(gdd_above_5)
 
+
+
 #### PLOT THE DATA ####
 #### Dist of Single Variables ####
 #### DOY ####
+
+
+## DOY by ALL ##
+# summary stats
 sumstat_doy_s2_all <- df_doy_s2 %>%
   summarize(n = n(),
             m = mean(doy_stage_2), 
             var = var(doy_stage_2),
             sd = sd(doy_stage_2))
 
-## DOY by ALL ##
+# histogram
 doy_stage_2_all <- ggplot(data = df_doy_s2, 
                           mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
   geom_histogram(bins = 20) +
@@ -55,7 +64,8 @@ doy_stage_2_all <- ggplot(data = df_doy_s2,
   theme_bw() +
   labs(title = "DOY Stage 2, all",
        x = "DOY Stage 2",
-       y = "Frequency")
+       y = "Frequency") +
+  guides(alpha = "none")
 
 # print
 doy_stage_2_all
@@ -65,15 +75,17 @@ doy_stage_2_all
 ggsave(filename = "doy_s2_all.png", device = png, plot = doy_stage_2_all, path = "output/figs")
 
 
+
+
 ## DOY by Species ##
-## histogram
+# summary stats
 sumstat_doy_s2_by_species <- df_doy_s2 %>%
   group_by(species) %>%
   summarize(n = n(),
             m = mean(doy_stage_2), 
             var = var(doy_stage_2),
             sd = sd(doy_stage_2))
-
+# histogram
 doy_s2_by_species <- ggplot(df_doy_s2, 
                                  mapping = aes(doy_stage_2, 
                                                fill = species, alpha = 0.7)) +
@@ -94,7 +106,7 @@ doy_s2_by_species <- ggplot(df_doy_s2,
 doy_s2_by_species
 
 # save
-ggsave(filename = "doy_s2_by_species.png", device = png, plot = doy_stage_2_by_species, path = "output/figs")
+ggsave(filename = "doy_s2_by_species.png", device = png, plot = doy_s2_by_species, path = "output/figs")
 
 ### very similar distributions.
 ### +/- 120 days for stage 2
@@ -108,9 +120,17 @@ ggsave(filename = "doy_s2_by_species.png", device = png, plot = doy_stage_2_by_s
 
 
 #### GDD ####
-### GDD all
-mean_gdd_s2_all <- mean(df_gdd_s2$gdd_above_5)
-## DOY by ALL ##
+## GDD by ALL ##
+
+# summary stats
+sumstat_gdd_s2_all <- df_gdd_s2 %>%
+  summarize(n = n(),
+            m = mean(gdd_above_5), 
+            var = var(gdd_above_5),
+            sd = sd(gdd_above_5))
+
+
+# histogram
 gdd_s2_all <- ggplot(data = df_gdd_s2, 
                           mapping = aes(gdd_above_5, after_stat(density), alpha = 0.8)) +
   geom_histogram(bins = 14) +
@@ -118,95 +138,129 @@ gdd_s2_all <- ggplot(data = df_gdd_s2,
   theme_bw() +
   labs(title = "GDD Stage 2, all",
        x = "GDD Stage 2",
-       y = "Frequency")
+       y = "Frequency") +
+  guides(alpha = "none")
 
+# print
 gdd_s2_all
-### +/- 200 gdd for stage 2
+
+# save 
 ggsave(filename = "gdd_s2_all.png", device = png, plot = gdd_s2_all, path = "output/figs")
-mean(df_gdd_s2$gdd_above_5)
-var(df_gdd_s2$gdd_above_5)
-sd(df_gdd_s2$gdd_above_5)
+### +/- 200 gdd for stage 2
+
+
+
 
   
   
-### GDD above 5 by Species until Stage 2
-gdd5_by_species <- ggplot(stage_2_for_analysis,
+## GDD by Species ##
+
+# summary stats
+sumstat_gdd_s2_by_species <- df_gdd_s2 %>%
+  group_by(species) %>%
+  summarize(n = n(),
+            m = mean(gdd_above_5), 
+            var = var(gdd_above_5),
+            sd = sd(gdd_above_5))
+
+# histogram
+gdd_s2_by_species <- ggplot(df_gdd_s2,
                                  mapping = aes(gdd_above_5, 
-                                               fill = species)) +
-  geom_histogram(bins = 20) +
+                                               fill = species, alpha = 0.7)) +
+  geom_histogram(bins = 14) +
+  geom_vline(data = sumstat_gdd_s2_by_species, aes(xintercept = m, color = species)) +
   facet_wrap( ~species, ncol = 1) +
   scale_fill_manual(values = my_pal) +
+  scale_color_manual(values = my_pal) +
   theme_bw() +
-  labs(title = "GDD above 5 until Stage 2 (Start of Budburst)",
+  labs(title = "GDD Stage 2",
        subtitle = "split by Species, all Cohorts combined",
        x = "Growing Degree Days",
        y = "Frequency",
-       fill = "Species")
+       fill = "Species") +
+  guides(fill = "none", alpha = "none", color = "none")
 
-gdd_above_5_by_species
-### all around 200
+# print
+gdd_s2_by_species
 
-ggsave(filename = "gdd_above_5_by_species.png", device = png, plot = gdd_above_5_by_species, path = "output/figs")
+# save
+ggsave(filename = "gdd_s2_by_species.png", device = png, plot = gdd_s2_by_species, path = "output/figs")
+
+### all around 200, but seem quite different
+### pubescens early, petraea, then robur
 
 
 
 
-############
-############
-#### PCA ####
-# Filter only numeric columns
-numeric_gdd_s2 <- df_gdd_to_stage_2 %>% 
-  select(altitude, latitude, doy_stage_2, gdd_above_5, age)
 
-# Perform PCA
-# color by species
-pca_res <- prcomp(numeric_gdd_s2, scale. = TRUE)
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "species", alpha = 0.5,
-              loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
-ggplotly(p)
-# species: no clear clustering
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "site_wet")
-ggplotly(p)
-# site_wet: no clear clustering
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "cohort")
-ggplotly(p)
-# cohort: clear clustering
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "site_name")
-ggplotly(p)
-# site_name: clear clustering: seems turkish ones are different
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "country")
-ggplotly(p)
-# country: confirms, turkish ones are different
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "altitude")
-ggplotly(p)
-# altitude: clear clustering --> explains turkish ones?
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "latitude")
-ggplotly(p)
-# latitude: clear clustering --> explains turkish ones?
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "doy_stage_2")
-ggplotly(p)
-# doy_stage_2: pattern left to right
-p <- autoplot(pca_res, data = df_gdd_to_stage_2, colour = "gdd_above_5")
-ggplotly(p)
-# gdd_above_5: pattern left to right
 
-### turkish ones cluster together. altitude and latitude quite different here
-### separate and repeat
+# obviously if you put in altitude, latitude etc, it will cluster by these...
+# #### PCA ##
+# # Filter only numeric columns
+# numeric_gdd_s2 <- df_gdd_s2 %>% 
+#   select(altitude, latitude, doy_stage_2, gdd_above_5, age)
+# 
+# # Perform PCA
+# # color by species
+# pca_res <- prcomp(numeric_gdd_s2, scale. = TRUE)
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "species", alpha = 0.5,
+#               loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
+# ggplotly(p)
+# # species: no clear clustering
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "site_wet")
+# ggplotly(p)
+# # site_wet: no clear clustering
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "cohort")
+# ggplotly(p)
+# # cohort: clear clustering
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "site_name")
+# ggplotly(p)
+# # site_name: clear clustering: seems turkish ones are different
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "country")
+# ggplotly(p)
+# # country: confirms, turkish ones are different
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "altitude")
+# ggplotly(p)
+# # altitude: clear clustering --> explains turkish ones?
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "latitude")
+# ggplotly(p)
+# # latitude: clear clustering --> explains turkish ones?
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "doy_stage_2")
+# ggplotly(p)
+# # doy_stage_2: pattern left to right (bc its part of the PCA)
+# 
+# p <- autoplot(pca_res, data = df_gdd_s2, colour = "gdd_above_5")
+# ggplotly(p)
+# # gdd_above_5: pattern left to right (bc its part of the PCA)
+# 
+# ### turkish ones cluster together. altitude and latitude quite different here
+# ### separate and repeat
 
-df_gdd_s2_tk <- df_gdd_to_stage_2 %>%
-  filter(country == "Turkey ")
 
-df_gdd_s2_tk_num<- df_gdd_s2_tk %>%
-  select(altitude, latitude, doy_stage_2, gdd_above_5, age)
+# df_gdd_s2_tk <- df_gdd_s2 %>%
+#   filter(country == "Turkey ")
+# 
+# df_gdd_s2_tk_num<- df_gdd_s2_tk %>%
+#   select(altitude, latitude, doy_stage_2, gdd_above_5, age)
+# 
+# 
+# # Perform PCA
+# # color by species
+# pca_tk_res <- prcomp(df_gdd_s2_tk_num)
+# 
+# p <- autoplot(pca_tk_res, data = df_gdd_s2_tk, colour = "site_name", alpha = 0.5,
+#               loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
+# ggplotly(p)
+# # within turkey, altitude is the biggest factor.
+# yes obviously... it varies more by altitude than by latitude..
 
-# Perform PCA
-# color by species
-pca_tk_res <- prcomp(df_gdd_s2_tk_num)
-
-p <- autoplot(pca_tk_res, data = df_gdd_s2_turkey, colour = "site_name", alpha = 0.5,
-              loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
-ggplotly(p)
-# within turkey, altitude is the biggest factor.
 
 df_gdd_s2_isik <- df_gdd_to_stage_2 %>%
   filter(site_name == "Işık Dağı")
