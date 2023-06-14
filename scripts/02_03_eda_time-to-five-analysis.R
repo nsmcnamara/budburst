@@ -39,16 +39,16 @@ str(df_gdd_2_to_5)
 sapply(df_gdd_2_to_5, function(x) sum(is.na(x)))
 
 # calculate means and counts  
-means <- df_gdd_2_to_5_clean %>%
+means <- df_gdd_2_to_5 %>%
   group_by(species) %>%
   summarize(m = mean(gdd_2_to_5))
-### very close, no diff by species
+### robur seems faster
 
-counts <- df_gdd_2_to_5_clean %>%
+counts <- df_gdd_2_to_5 %>%
   group_by(species) %>%
   summarise(n = n())
 
-sum_stats <- df_gdd_2_to_5_clean %>%
+sum_stats <- df_gdd_2_to_5 %>%
   group_by(species, site_name, age, latitude, longitude, altitude) %>%
   summarize(mean = mean(gdd_2_to_5))
 
