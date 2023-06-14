@@ -978,7 +978,7 @@ ggsave(filename = "pet_gdd_germans.png", device = png, plot = pet_gdd_germans, p
 
 write.csv(sumstat_pet_gdd_germans, file = "output/tables/pet_gdd_germans.csv", row.names = FALSE)
 
-## in my mind there's nothing here
+##  there's nothing here
 
 
 
@@ -1043,64 +1043,225 @@ write.csv(sumstat_pet_gdd_germans, file = "output/tables/pet_gdd_germans.csv", r
 # 
 # 
 
-#### Pubescens ####
-### GDD above 5 for Q.pubescens by site
-
+### GDD above 5 for Q. pubescens by site
 # all sites for pubescens 
-gdd_above_5_pubescens_by_site <- stage_2_for_analysis %>% 
+gdd_above_5_pub_by_site <- df_gdd_s2 %>% 
   filter(species == "Q.pubescens") %>%
+  mutate(site_name = reorder(site_name, latitude)) %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = site_name)) +
+                       fill = site_name, alpha = 0.7)) +
   geom_histogram(bins = 40, colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 until Stage 2 for Q. pubescens",
-      subtitle = "split by Site, all Cohorts",
+  scale_fill_manual(values = my_pal) +
+  labs(title = "GDD above 5 until Stage 2 for Q. pubescens", 
+       subtitle = "split by Site, all Cohorts",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Site name") +
   xlim(100, 400) +
-  theme(legend.position = "none")
-  
-  
-gdd_above_5_pubescens_by_site
+  theme(legend.position = "none") +
+  guides(alpha = "none", fill = "none") +
+  theme_bw()
 
-ggsave(filename = "gdd_above_5_pubescens_by_site.png", 
+# print
+gdd_above_5_pub_by_site
+
+# save
+ggsave(filename = "gdd_above_5_pub_by_site.png", 
        device = png, width = 5,
-       plot = gdd_above_5_pubescens_by_site, 
+       plot = gdd_above_5_pub_by_site, 
        path = "output/figs")
 
 
 # all sites for pubescens, by site and cohort 
-gdd_above_5_pubescens_by_site_and_cohort <- stage_2_for_analysis %>% 
+gdd_above_5_pub_by_site_and_cohort <- df_gdd_s2 %>% 
   filter(species == "Q.pubescens") %>%
+  mutate(site_name = reorder(site_name, latitude)) %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = cohort, alpha = 0.7)) +
+                       fill = cohort, alpha = 0.5)) +
   geom_histogram(bins = 40, position = "dodge", colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
-  scale_fill_manual(values = my_pal[c(1,7)]) +
+  scale_fill_manual(values = my_pal_cohorts) +
   labs(title = "GDD above 5 until Stage 2 for Q. pubescens", 
-       subtitle = "split by Site and Cohort",
+       subtitle = "split by Site and Cohort, ordered by Latitude",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Cohort") +
-  xlim(100, 400) +
+  xlim(100, 350) +
   ylim(0, 0.1) +
-  scale_alpha(guide = "none") +
+  guides(alpha = "none", fill = guide_legend(override.aes = list(alpha = 0.5))) +
   theme_bw()
 
-gdd_above_5_pubescens_by_site_and_cohort
 
-ggsave(filename = "gdd_above_5_pubescens_by_site_and_cohort.png", 
-       device = png, width = 5, height = 8,
-       plot = gdd_above_5_pubescens_by_site_and_cohort,
+# print
+gdd_above_5_pub_by_site_and_cohort
+
+ggsave(filename = "gdd_above_5_pub_by_site_and_cohort.png", 
+       device = png, width = 5, height = 10,
+       plot = gdd_above_5_pub_by_site_and_cohort,
        path = "output/figs")
 
 
 
+# ALL COHORTS BY LATITUDE
+pub_gdd_lat <- df_gdd_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
+                       color = reorder(site_name, latitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.pubescens",
+       x = "Latitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
 
+# print
+pub_gdd_lat
+
+# save
+ggsave(filename = "pubescens_gdd-lat.png", device = png, plot = pub_gdd_lat, path = "output/figs")
+
+# meaningful ?
+
+
+# ALL COHORTS BY ALTITUDE
+pub_gdd_alt <- df_gdd_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
+                       color = reorder(site_name, altitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.pubescens",
+       x = "Altitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+# print
+pub_gdd_alt
+
+# save
+ggsave(filename = "pub_gdd-alt.png", device = png, plot = pub_gdd_alt, path = "output/figs")
+# good altitude pattern
+
+
+## The Northerns ##
+# sumstats
+
+sumstat_pub_gdd_northern <- df_gdd_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  filter(latitude >= 45) %>%
+  group_by(site_name, cohort) %>%
+  summarize(n = n(),
+            m = mean(gdd_above_5), 
+            var = var(gdd_above_5),
+            sd = sd(gdd_above_5))
+
+# site_order_pet <- sumstat_pet_gdd_germans %>%
+#   arrange(m) %>%
+#   pull(site_name)
+# 
+# df_pet_gdd_germans <- df_gdd_s2 %>%
+#   filter(species == "Q.petraea") %>%
+#   filter(country == "Germany") %>%
+#   mutate(site_name = factor(site_name, levels = site_order_pet))
+
+
+pub_gdd_northern <- df_gdd_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  filter(latitude >= 45) %>%
+  ggplot(mapping = aes(gdd_above_5, 
+                       fill = site_name, alpha = 0.7)) +
+  geom_histogram(bins = 10, color = "black") +
+  geom_vline(data = sumstat_pub_gdd_northern, aes(xintercept = m, color = site_name)) +  
+  facet_grid(site_name ~ cohort) +
+  scale_fill_manual(values = my_pal[c(4,3,6,7)]) +
+  scale_color_manual(values = my_pal[c(4,3,6,7)]) +  
+  theme_bw() +
+  labs(title = "GDD Stage 2: The Northerns",
+       subtitle = "split by Collection Site, all Cohorts split",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Collection Site") +
+  guides(fill = "none", alpha = "none", color = "none")
+
+# print
+pub_gdd_northern
+
+# save
+ggsave(filename = "pub_gdd_northern.png", device = png, plot = pub_gdd_northern, path = "output/figs")
+
+write.csv(sumstat_pub_gdd_northern, file = "output/tables/pub_gdd_northern.csv", row.names = FALSE)
+
+##  maybe a slight tendency
+
+
+## The Southerns ##
+# sumstats
+
+sumstat_pub_gdd_southern <- df_gdd_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  filter(latitude <= 45) %>%
+  group_by(site_name, cohort) %>%
+  summarize(n = n(),
+            m = mean(gdd_above_5), 
+            var = var(gdd_above_5),
+            sd = sd(gdd_above_5))
+
+# site_order_pet <- sumstat_pet_gdd_germans %>%
+#   arrange(m) %>%
+#   pull(site_name)
+# 
+# df_pet_gdd_germans <- df_gdd_s2 %>%
+#   filter(species == "Q.petraea") %>%
+#   filter(country == "Germany") %>%
+#   mutate(site_name = factor(site_name, levels = site_order_pet))
+
+
+pub_gdd_southern <- df_gdd_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  filter(latitude <= 45) %>%
+  ggplot(mapping = aes(gdd_above_5, 
+                       fill = site_name, alpha = 0.7)) +
+  geom_histogram(bins = 10, color = "black") +
+#  geom_vline(data = sumstat_pub_gdd_southern, aes(xintercept = m, color = site_name)) +  
+  facet_wrap(~ reorder(site_name, latitude), ncol = 1) +
+  scale_fill_manual(values = my_pal[c(4,3,6,7)]) +
+  scale_color_manual(values = my_pal[c(4,3,6,7)]) +  
+  theme_bw() +
+  labs(title = "GDD Stage 2: The Southerns",
+       subtitle = "split by Collection Site, all Cohorts split",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Collection Site") +
+  guides(fill = "none", alpha = "none", color = "none")
+
+# print
+pub_gdd_southern
+
+# save
+ggsave(filename = "pub_gdd_southern.png", device = png, plot = pub_gdd_southern, path = "output/figs")
+
+write.csv(sumstat_pub_gdd_northern, file = "output/tables/pub_gdd_northern.csv", row.names = FALSE)
+
+##  maybe a slight tendency
 
 
 
