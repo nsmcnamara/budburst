@@ -330,11 +330,14 @@ stage_2_combined_mother <- stage_2_combined_mother %>%
 ### here not ####
 # add cumulative temperature
 stage_2_combined_mother <-  stage_2_combined_mother %>%
-  mutate(day_of_year = round(doy_stage_2))
+  mutate(day_of_year = round(doy_stage_2)) %>%
+  mutate(year = as.numeric(year))
+
+weather_zh_22_23_comb <- rbind(weather_zh_22, weather_zh_23)
 
 by_add_weather <- join_by(day_of_year, year == year)
 stage_2_combined_mother_weather <- left_join(stage_2_combined_mother, 
-                                             weather_zh_2023%>% 
+                                             weather_zh_22_23_comb%>% 
                                                select(day_of_year, year, gdd_above_5), 
                                              by = by_add_weather)
 
