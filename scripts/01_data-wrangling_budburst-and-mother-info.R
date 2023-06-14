@@ -244,11 +244,11 @@ stage_2_interpolated <- stage_2_missed_combined %>%
   mutate(amount_steps = 2 - budburst_score_pre_2) %>%
   mutate(doy_stage_2 = day_of_year_pre_2 + (amount_steps * days_per_score_step))
 
-### improved but check! ####
-stage_2_interpolated <- stage_2_missed_combined %>%
-  mutate(
-    doy_stage_2 = day_of_year_pre_2 + ((2 - budburst_score_pre_2) * (day_of_year_post_2 - day_of_year_pre_2) / (budburst_score_post_2 - budburst_score_pre_2))
-  )
+# ### improved but check! ####
+# stage_2_interpolated <- stage_2_missed_combined %>%
+#   mutate(
+#     doy_stage_2 = day_of_year_pre_2 + ((2 - budburst_score_pre_2) * (day_of_year_post_2 - day_of_year_pre_2) / (budburst_score_post_2 - budburst_score_pre_2))
+#   )
 
 ###
 # combine calculated and interpolated stage 2 df
@@ -269,48 +269,49 @@ stage_2_combined_mother <- left_join(stage_2, mother_info, by = "mother_id")
 stage_2_combined_mother <- stage_2_combined_mother %>%
   drop_na(species)
 ### total: 1112 acorns for analysis
+
 #### replace until here ####
-
-# Find all observations for which stage 2 was measured
-direct_first_stage_2_gpt <- budburst_zh_all %>%
-  filter(budburst_score == 2) %>%
-  group_by(UID) %>%
-  filter(day_of_year == min(day_of_year)) %>%
-  mutate(doy_stage_2 = day_of_year)
-
-# Linear interpolation of stage 2
-stage_2_interpolated_gpt <- budburst_zh_all %>%
-  anti_join(direct_first_stage_2_gpt, by = "UID") %>%
-  group_by(UID) %>%
-  filter(budburst_score >= 2) %>%
-  filter(day_of_year == min(day_of_year)) %>%
-  rename(budburst_score_post_2 = budburst_score) %>%
-  rename(day_of_year_post_2 = day_of_year) %>%
-  select(UID, acorn_id, day_of_year_post_2, budburst_score_post_2) %>%
-  left_join(budburst_zh_all %>% filter(budburst_score <= 2) %>%
-              group_by(UID) %>%
-              filter(day_of_year == max(day_of_year)) %>%
-              rename(budburst_score_pre_2 = budburst_score) %>%
-              rename(day_of_year_pre_2 = day_of_year), by = "UID") %>%
-  mutate(difference_days = day_of_year_post_2 - day_of_year_pre_2) %>%
-  mutate(difference_budburst_score = budburst_score_post_2 - budburst_score_pre_2) %>%
-  mutate(days_per_score_step = difference_days / difference_budburst_score) %>%
-  mutate(amount_steps = 2 - budburst_score_pre_2) %>%
-  mutate(doy_stage_2 = day_of_year_pre_2 + (amount_steps * days_per_score_step))
-
-# Combine calculated and interpolated stage 2 data frames
-stage_2_all_gpt <- bind_rows(direct_first_stage_2, stage_2_interpolated)
-
-# Clean up data frame
-stage_2_gpt <- stage_2_all_gpt %>%
-  select(UID, acorn_id, mother_id, doy_stage_2, cohort, age, year)
-
-# Combine stage 2 and mother info
-stage_2_combined_mother_gpt <- left_join(stage_2_gpt, mother_info, by = "mother_id") %>%
-  drop_na(species)
-
-
-identical(stage_2_combined_mother, stage_2_combined_mother_gpt)
+# 
+# # Find all observations for which stage 2 was measured
+# direct_first_stage_2_gpt <- budburst_zh_all %>%
+#   filter(budburst_score == 2) %>%
+#   group_by(UID) %>%
+#   filter(day_of_year == min(day_of_year)) %>%
+#   mutate(doy_stage_2 = day_of_year)
+# 
+# # Linear interpolation of stage 2
+# stage_2_interpolated_gpt <- budburst_zh_all %>%
+#   anti_join(direct_first_stage_2_gpt, by = "UID") %>%
+#   group_by(UID) %>%
+#   filter(budburst_score >= 2) %>%
+#   filter(day_of_year == min(day_of_year)) %>%
+#   rename(budburst_score_post_2 = budburst_score) %>%
+#   rename(day_of_year_post_2 = day_of_year) %>%
+#   select(UID, acorn_id, day_of_year_post_2, budburst_score_post_2) %>%
+#   left_join(budburst_zh_all %>% filter(budburst_score <= 2) %>%
+#               group_by(UID) %>%
+#               filter(day_of_year == max(day_of_year)) %>%
+#               rename(budburst_score_pre_2 = budburst_score) %>%
+#               rename(day_of_year_pre_2 = day_of_year), by = "UID") %>%
+#   mutate(difference_days = day_of_year_post_2 - day_of_year_pre_2) %>%
+#   mutate(difference_budburst_score = budburst_score_post_2 - budburst_score_pre_2) %>%
+#   mutate(days_per_score_step = difference_days / difference_budburst_score) %>%
+#   mutate(amount_steps = 2 - budburst_score_pre_2) %>%
+#   mutate(doy_stage_2 = day_of_year_pre_2 + (amount_steps * days_per_score_step))
+# 
+# # Combine calculated and interpolated stage 2 data frames
+# stage_2_all_gpt <- bind_rows(direct_first_stage_2, stage_2_interpolated)
+# 
+# # Clean up data frame
+# stage_2_gpt <- stage_2_all_gpt %>%
+#   select(UID, acorn_id, mother_id, doy_stage_2, cohort, age, year)
+# 
+# # Combine stage 2 and mother info
+# stage_2_combined_mother_gpt <- left_join(stage_2_gpt, mother_info, by = "mother_id") %>%
+#   drop_na(species)
+# 
+# 
+# identical(stage_2_combined_mother, stage_2_combined_mother_gpt)
 
 
 
