@@ -1,6 +1,6 @@
 ### Data import, cleaning and transformation for budburst scoring and information from mother trees.
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-07
+### Last update:  2023-06-14
 ### Simone McNamara
 
 
@@ -107,24 +107,19 @@ budburst_zh22_transformed <- budburst_zh22_clean %>%
 
 #### Meteorological Data ####
 ### Import meteorological data for Zurich Site 
-weather_zh_2023 <- read.csv("~/budburst/data/processed/weather-zurich-2023.csv", stringsAsFactors=TRUE)
-weather_zh_2022 <- read.csv("~/budburst/data/processed/weather-zurich-2022.csv", stringsAsFactors=TRUE)
-
-
-## check out data
-glimpse(weather_zh_2023)
-## Checking NAs
-weather_zh_2023 %>%
-  summarise(across(everything(), ~ sum(is.na(.))))
+# weather_zh_2023 <- read.csv("~/budburst/data/processed/weather-zurich-2023.csv", stringsAsFactors=TRUE)
+# weather_zh_2022 <- read.csv("~/budburst/data/processed/weather-zurich-2022.csv", stringsAsFactors=TRUE)
+weather_zh_22_23 <- read.csv("~/budburst/data/processed/weather-zurich-2022-2023.csv", stringsAsFactors=TRUE)
 
 ## check out data
-glimpse(weather_zh_2022)
+glimpse(weather_zh_22_23)
 ## Checking NAs
-weather_zh_2022 %>%
+weather_zh_22_23 %>%
   summarise(across(everything(), ~ sum(is.na(.))))
+
 
 ### Transforming the data
-weather_zh_2023 <- weather_zh_2023 %>%
+weather_zh_22_23 <- weather_zh_22_23 %>%
   # rename columns to english
   rename(date = MESSDAT) %>%
   rename(temp_mean = MESSWERT_mean) %>%
@@ -134,18 +129,43 @@ weather_zh_2023 <- weather_zh_2023 %>%
   mutate(date = as.character(date)) %>%
   mutate(date = clock::date_time_parse_RFC_3339(date)) %>%
   mutate(day_of_year = lubridate::yday(date)) %>%
-  mutate(year = "2023") %>%
+  mutate(year = lubridate::year(date))
+  
+## separate in 2023 and 2022
+weather_zh_22 <- weather_zh_22_23 %>%
+  filter(year == "2022") %>%
+  dplyr::select(-c(1:4)) %>%
   # calculate temp above 5 degrees per day
   mutate(mean_temp_above_5 = case_when(temp_mean >= 5 ~ temp_mean - 5, .default = 0)) %>%
   # cumulative temp
-  mutate(gdd_above_5 = cumsum(mean_temp_above_5)) %>%
-  # drop irrelevant columns
-  select(-c(1:4))
+  mutate(gdd_above_5 = cumsum(mean_temp_above_5))
 
+weather_zh_23 <- weather_zh_22_23 %>%
+  filter(year == "2023") %>%
+  dplyr::select(-c(1:4)) %>%
+  # calculate temp above 5 degrees per day
+  mutate(mean_temp_above_5 = case_when(temp_mean >= 5 ~ temp_mean - 5, .default = 0)) %>%
+  # cumulative temp
+  mutate(gdd_above_5 = cumsum(mean_temp_above_5))
+
+
+
+## check out data
+glimpse(weather_zh_22)
+## Checking NAs
+weather_zh_22 %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+
+## check out data
+glimpse(weather_zh_23)
+## Checking NAs
+weather_zh_23 %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
 
 
 ### export weather zurich 2023
-write_csv(weather_zh_2023, "~/budburst/data/processed/weather_zh_2023_processed.csv")
+write_csv(weather_zh_23, "~/budburst/data/processed/weather_zh_2023_processed.csv")
+write_csv(weather_zh_22, "~/budburst/data/processed/weather_zh_2022_processed.csv")
 
 
 #### Mother Info #####
@@ -188,7 +208,7 @@ stage_2_missed <- budburst_zh_all %>%
   filter(!UID %in% direct_first_stage_2$UID)
 nrow(distinct(stage_2_missed, UID))
 ### 348
-nrow(distinct(budburst_zh_all, acorn_id))
+nrow(distinct(budburst_zh_all, UID))
 ### sanity check: 348 + 788 = 1136, ie all measurements accounted for
 
 # find first observation after stage 2 was reached
