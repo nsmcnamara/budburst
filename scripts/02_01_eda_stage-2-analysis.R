@@ -118,21 +118,21 @@ ggplot(df_doy_s2, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens"
     x = 3.5, 
     y = 170,
     label = paste("n = ", counts[1,2], "mean =", round(means[1,2],2)),
-    colour = my_pal[1]
+    colour = my_pal_species[1]
   ) +
   annotate(
     "text",
     x = 2.5, 
     y = 170,
     label = paste("n = ", counts[2,2], "mean =", round(means[2,2],2)),
-    colour = my_pal[2]
+    colour = my_pal_species[2]
   ) +
   annotate(
     "text",
     x = 1.5, 
     y = 170,
     label = paste("n = ", counts[3,2], "mean =", round(means[3,2],2)),
-    colour = my_pal[3]
+    colour = my_pal_species[3]
   ) +
   coord_flip(xlim = c(1, NA), ylim = c(90, 180), expand = TRUE, clip = "on") +
   scale_x_discrete(breaks = seq(100, 400, 50)) +
@@ -143,8 +143,8 @@ ggplot(df_doy_s2, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens"
        colour = "Species") +
   scale_alpha(guide = "none") +
   labs(fill = "Species", colour = "Species") +
-  scale_fill_manual(values = my_pal) +
-  scale_color_manual(values = my_pal) 
+  scale_fill_manual(values = my_pal_species) +
+  scale_color_manual(values = my_pal_species) 
 
 
 
@@ -184,7 +184,7 @@ ggsave(filename = "doy_s2_by_species.png", device = png, plot = doy_s2_by_specie
 
 # 
 # 
-# #### DOY 2023 ####
+# #### DOY 2023 ###
 # # since so far I only have weather data for 2023 and I want to compare doy and gdd,
 # # I should have the same plot as above but for 2023 only.
 # # when we have weather data for 2022, can be removed.
@@ -810,66 +810,238 @@ write.csv(sumstat_robur_gdd_austrians, file = "output/tables/robur_gdd_austrians
 
 
 
-#### Petraea ####
-### GDD above 5 for Q.petraea by site
-# all sites for all species individually
-# ggplot(data = stage_2_for_analysis,
-#       mapping = aes(x = gdd_above_5, y = ..density..,
-#                     fill = species, alpha = 0.5)) +
-#  geom_histogram(bins = 14) +
-#  facet_wrap(~site_name)
-
+#### Q. PETRAEA ####
+### GDD above 5 for Q. Petraea by site
 # all sites for petraea 
-gdd_above_5_petraea_by_site <- stage_2_for_analysis %>% 
+gdd_above_5_pet_by_site <- df_gdd_s2 %>% 
   filter(species == "Q.petraea") %>%
+  mutate(site_name = reorder(site_name, latitude)) %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                    fill = site_name)) +
+                       fill = site_name, alpha = 0.7)) +
   geom_histogram(bins = 40, colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 until Stage 2 for Q. petraea",
-       subtitle = "split by Site, all Cohorts combined",
+  scale_fill_manual(values = my_pal) +
+  labs(title = "GDD above 5 until Stage 2 for Q. petraea", 
+       subtitle = "split by Site, all Cohorts",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Site name") +
   xlim(100, 400) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  guides(alpha = "none", fill = "none") +
+  theme_bw()
 
+# print
+gdd_above_5_pet_by_site
 
-gdd_above_5_petraea_by_site
-
-ggsave(filename = "gdd_above_5_petraea_by_site.png", 
+# save
+ggsave(filename = "gdd_above_5_pet_by_site.png", 
        device = png, width = 5,
-       plot = gdd_above_5_petraea_by_site, 
+       plot = gdd_above_5_pet_by_site, 
        path = "output/figs")
 
 
-# all sites for petraea, by cohort
-gdd_above_5_petraea_by_site_and_cohort <- stage_2_for_analysis %>% 
+# all sites for robur, by site and cohort 
+gdd_above_5_pet_by_site_and_cohort <- df_gdd_s2 %>% 
   filter(species == "Q.petraea") %>%
+  mutate(site_name = reorder(site_name, latitude)) %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = cohort)) +
+                       fill = cohort, alpha = 0.5)) +
   geom_histogram(bins = 40, position = "dodge", colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 until Stage 2 for Q. petraea",
-       subtitle = "split by Site, coloured by Cohort",
+  scale_fill_manual(values = my_pal_cohorts) +
+  labs(title = "GDD above 5 until Stage 2 for Q. petraea", 
+       subtitle = "split by Site and Cohort, ordered by Latitude",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Cohort") +
-  xlim(100, 400) +
-  ylim(0, 0.1)
+  xlim(100, 350) +
+  ylim(0, 0.1) +
+  guides(alpha = "none", fill = guide_legend(override.aes = list(alpha = 0.5))) +
+  theme_bw()
 
-gdd_above_5_petraea_by_site_and_cohort
-ggsave(filename = "gdd_above_5_petraea_by_site_and_cohort.png", 
-       device = png, width = 5, height = 5,
-       plot = gdd_above_5_petraea_by_site_and_cohort,
+
+# print
+gdd_above_5_pet_by_site_and_cohort
+
+ggsave(filename = "gdd_above_5_pet_by_site_and_cohort.png", 
+       device = png, width = 5, height = 10,
+       plot = gdd_above_5_pet_by_site_and_cohort,
        path = "output/figs")
 
 
 
+# ALL COHORTS BY LATITUDE
+pet_gdd_lat <- df_gdd_s2 %>%
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
+                       color = reorder(site_name, latitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.petraea",
+       x = "Latitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+# print
+pet_gdd_lat
+
+# save
+ggsave(filename = "petraea_gdd-lat.png", device = png, plot = pet_gdd_lat, path = "output/figs")
+
+# not meaningful
+
+
+# ALL COHORTS BY ALTITUDE
+pet_gdd_alt <- df_gdd_s2 %>%
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
+                       color = reorder(site_name, altitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.petraea",
+       x = "Altitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+# print
+pet_gdd_alt
+
+# save
+ggsave(filename = "pet_gdd-alt.png", device = png, plot = pet_gdd_alt, path = "output/figs")
+# no meaningful pattern
+
+
+## The Germans ##
+# sumstats
+
+sumstat_pet_gdd_germans <- df_gdd_s2 %>%
+  filter(species == "Q.petraea") %>%
+  filter(country == "Germany") %>%
+  group_by(site_name, cohort) %>%
+  summarize(n = n(),
+            m = mean(gdd_above_5), 
+            var = var(gdd_above_5),
+            sd = sd(gdd_above_5))
+
+# site_order_pet <- sumstat_pet_gdd_germans %>%
+#   arrange(m) %>%
+#   pull(site_name)
+# 
+# df_pet_gdd_germans <- df_gdd_s2 %>%
+#   filter(species == "Q.petraea") %>%
+#   filter(country == "Germany") %>%
+#   mutate(site_name = factor(site_name, levels = site_order_pet))
+
+
+pet_gdd_germans <- df_gdd_s2 %>%
+  filter(species == "Q.petraea") %>%
+  filter(country == "Germany") %>%
+  ggplot(mapping = aes(gdd_above_5, 
+                       fill = site_name, alpha = 0.7)) +
+  geom_histogram(bins = 10, color = "black") +
+  geom_vline(data = sumstat_pet_gdd_germans, aes(xintercept = m, color = site_name)) +  
+  facet_grid(site_name ~ cohort) +
+  scale_fill_manual(values = my_pal[c(4,3,6,7)]) +
+  scale_color_manual(values = my_pal[c(4,3,6,7)]) +  
+  theme_bw() +
+  labs(title = "GDD Stage 2: The Germans",
+       subtitle = "split by Collection Site, all Cohorts split, ordered by mean GDD",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Collection Site") +
+  guides(fill = "none", alpha = "none", color = "none")
+
+# print
+pet_gdd_germans
+
+# save
+ggsave(filename = "pet_gdd_germans.png", device = png, plot = pet_gdd_germans, path = "output/figs")
+
+write.csv(sumstat_pet_gdd_germans, file = "output/tables/pet_gdd_germans.csv", row.names = FALSE)
+
+## in my mind there's nothing here
+
+
+
+
+# ### GDD above 5 for Q.petraea by site
+# # all sites for all species individually
+# # ggplot(data = stage_2_for_analysis,
+# #       mapping = aes(x = gdd_above_5, y = ..density..,
+# #                     fill = species, alpha = 0.5)) +
+# #  geom_histogram(bins = 14) +
+# #  facet_wrap(~site_name)
+# 
+# # all sites for petraea 
+# gdd_above_5_petraea_by_site <- stage_2_for_analysis %>% 
+#   filter(species == "Q.petraea") %>%
+#   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+#                     fill = site_name)) +
+#   geom_histogram(bins = 40, colour = "black") +
+#   geom_density(alpha = 0.5) +
+#   facet_wrap(~site_name, ncol = 1) +
+#   scale_fill_brewer(palette = "Set2") +
+#   labs(title = "GDD above 5 until Stage 2 for Q. petraea",
+#        subtitle = "split by Site, all Cohorts combined",
+#        x = "Growing Degree Days",
+#        y = "Frequency",
+#        fill = "Site name") +
+#   xlim(100, 400) +
+#   theme(legend.position = "none")
+# 
+# 
+# gdd_above_5_petraea_by_site
+# 
+# ggsave(filename = "gdd_above_5_petraea_by_site.png", 
+#        device = png, width = 5,
+#        plot = gdd_above_5_petraea_by_site, 
+#        path = "output/figs")
+# 
+# 
+# # all sites for petraea, by cohort
+# gdd_above_5_petraea_by_site_and_cohort <- stage_2_for_analysis %>% 
+#   filter(species == "Q.petraea") %>%
+#   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+#                        fill = cohort)) +
+#   geom_histogram(bins = 40, position = "dodge", colour = "black") +
+#   geom_density(alpha = 0.5) +
+#   facet_wrap(~site_name, ncol = 1) +
+#   scale_fill_brewer(palette = "Set2") +
+#   labs(title = "GDD above 5 until Stage 2 for Q. petraea",
+#        subtitle = "split by Site, coloured by Cohort",
+#        x = "Growing Degree Days",
+#        y = "Frequency",
+#        fill = "Cohort") +
+#   xlim(100, 400) +
+#   ylim(0, 0.1)
+# 
+# gdd_above_5_petraea_by_site_and_cohort
+# ggsave(filename = "gdd_above_5_petraea_by_site_and_cohort.png", 
+#        device = png, width = 5, height = 5,
+#        plot = gdd_above_5_petraea_by_site_and_cohort,
+#        path = "output/figs")
+# 
+# 
+# 
 
 #### Pubescens ####
 ### GDD above 5 for Q.pubescens by site
