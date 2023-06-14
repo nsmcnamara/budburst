@@ -357,13 +357,14 @@ direct_first_stage_5 <- budburst_zh_all %>%
   filter(budburst_score == 5) %>%
   group_by(UID) %>%
   slice_min(day_of_year) %>%
-  mutate(doy_stage_5 = day_of_year)
+  mutate(doy_stage_5 = day_of_year) %>%
+  mutate(year = as.numeric(year))
 ### 1134 observations: ok
 
 # add gdd at time point of stage 5
 by <- join_by(day_of_year, year == year)
 direct_first_stage_5_weather_for_5 <- left_join(direct_first_stage_5, 
-                                         weather_zh_2023 %>% select(day_of_year, year, gdd_above_5),
+                                         weather_zh_22_23_comb %>% select(day_of_year, year, gdd_above_5),
                                          by = by) %>%
   rename(gdd_stage_5 = gdd_above_5) %>%
   select(UID, acorn_id, mother_id, cohort, age, year, doy_stage_5, gdd_stage_5)
@@ -378,7 +379,7 @@ stage_2_and_5 <- left_join(direct_first_stage_5_weather_for_5,
 # add gdd at time point of stage 2
 by_weather_2 <- join_by(doy_stage_2 == day_of_year, year == year)
 stage_2_and_5_weather <- left_join(stage_2_and_5, 
-                                    weather_zh_2023 %>% select(day_of_year, year, gdd_above_5),
+                                    weather_zh_22_23_comb %>% select(day_of_year, year, gdd_above_5),
                                                 by = by_weather_2) %>%
   rename(gdd_stage_2 = gdd_above_5)
 
