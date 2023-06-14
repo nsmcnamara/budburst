@@ -23,6 +23,8 @@ my_pal <- c(
 "#DE439C",
 "#FF6767")
 
+my_pal_species <- c( "#1E7B5C",  "#71C0E5",  "#713478")
+my_pal_cohorts <- c(   "#638323", "#1B3643","#FF6767")
 
 #### Data Import ####
 df_gdd_2_to_5 <- read.csv("~/budburst/data/processed/gdd_2_to_5_for_analysis.csv", stringsAsFactors=TRUE)
