@@ -38,10 +38,6 @@ str(df_gdd_2_to_5)
 ## check NAs
 sapply(df_gdd_2_to_5, function(x) sum(is.na(x)))
 
-### DF w/o NA (no weather data for 2022, ergo no gdd)
-df_gdd_2_to_5_clean <- df_gdd_2_to_5 %>%
-  drop_na(gdd_2_to_5)
-
 # calculate means and counts  
 means <- df_gdd_2_to_5_clean %>%
   group_by(species) %>%
