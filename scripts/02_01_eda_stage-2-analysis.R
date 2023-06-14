@@ -24,6 +24,8 @@ my_pal <- c(
   "#DE439C",
   "#FF6767")
 
+my_pal_species <- c( "#1E7B5C",  "#71C0E5",  "#713478")
+my_pal_cohorts <- c(   "#638323", "#1B3643","#FF6767")
 
 
 #### Data Import ####
@@ -58,7 +60,7 @@ sumstat_doy_s2_all <- df_doy_s2 %>%
 # histogram
 doy_s2_all <- ggplot(data = df_doy_s2, 
                           mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
-  geom_histogram(bins = 20) +
+  geom_histogram(bins = 20, color = "black") +
   geom_vline(xintercept = sumstat_doy_s2_all$m, color = "red") +
   theme_bw() +
   labs(title = "DOY Stage 2, all",
@@ -73,6 +75,76 @@ doy_s2_all
 # save
 ggsave(filename = "doy_s2_all.png", device = png, plot = doy_s2_all, path = "output/figs")
 
+## raincloud
+# means by species
+means <- df_doy_s2 %>%
+  group_by(species) %>%
+  summarize(m = mean(doy_stage_2))
+counts <- df_doy_s2 %>%
+  group_by(species) %>%
+  summarise(n = n())
+
+# plot
+ggplot(df_doy_s2, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens", "Q.petraea"), 
+                      y = doy_stage_2, 
+                      colour = species, fill = species)) +
+  ggdist::stat_halfeye(
+    breaks = 14,
+    adjust = 0.5,
+    width = 0.6,
+    justification = -.2,
+    .width = 0,
+    point_colour = NA,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  geom_boxplot(
+    width = .12,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  ggdist::stat_dots(
+    position = "dodge",
+    scale = 0.4,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  # annotate mean and n
+  annotate(
+    "text",
+    x = 3.5, 
+    y = 170,
+    label = paste("n = ", counts[1,2], "mean =", round(means[1,2],2)),
+    colour = my_pal[1]
+  ) +
+  annotate(
+    "text",
+    x = 2.5, 
+    y = 170,
+    label = paste("n = ", counts[2,2], "mean =", round(means[2,2],2)),
+    colour = my_pal[2]
+  ) +
+  annotate(
+    "text",
+    x = 1.5, 
+    y = 170,
+    label = paste("n = ", counts[3,2], "mean =", round(means[3,2],2)),
+    colour = my_pal[3]
+  ) +
+  coord_flip(xlim = c(1, NA), ylim = c(90, 180), expand = TRUE, clip = "on") +
+  scale_x_discrete(breaks = seq(100, 400, 50)) +
+  theme_bw() +
+  theme(legend.position = c(0.9, 0.2)) +
+  labs(x = "Species",
+       y = "DOY Stage 2",
+       colour = "Species") +
+  scale_alpha(guide = "none") +
+  labs(fill = "Species", colour = "Species") +
+  scale_fill_manual(values = my_pal) +
+  scale_color_manual(values = my_pal) 
 
 
 
@@ -88,11 +160,11 @@ sumstat_doy_s2_by_species <- df_doy_s2 %>%
 doy_s2_by_species <- ggplot(df_doy_s2, 
                                  mapping = aes(doy_stage_2, 
                                                fill = species, alpha = 0.7)) +
-  geom_histogram(bins = 20) +
+  geom_histogram(bins = 20, color = "black") +
   geom_vline(data = sumstat_doy_s2_by_species, aes(xintercept = m, color = species)) +
   facet_wrap(~species, ncol = 1) +
-  scale_fill_manual(values = my_pal) +
-  scale_color_manual(values = my_pal) +
+  scale_fill_manual(values = my_pal_species) +
+  scale_color_manual(values = my_pal_species) +
   theme_bw() +
   labs(title = "DOY Stage 2, split by Species, all cohorts combined",
        x = "DOY Stage 2",
@@ -193,7 +265,7 @@ sumstat_gdd_s2_all <- df_gdd_s2 %>%
 # histogram
 gdd_s2_all <- ggplot(data = df_gdd_s2, 
                           mapping = aes(gdd_above_5, after_stat(density), alpha = 0.8)) +
-  geom_histogram(bins = 20) +
+  geom_histogram(bins = 20, color = "black") +
   geom_vline(xintercept = sumstat_gdd_s2_all$m, color = "red") +
   theme_bw() +
   labs(title = "GDD Stage 2, all",
@@ -227,11 +299,11 @@ sumstat_gdd_s2_by_species <- df_gdd_s2 %>%
 gdd_s2_by_species <- ggplot(df_gdd_s2,
                                  mapping = aes(gdd_above_5, 
                                                fill = species, alpha = 0.7)) +
-  geom_histogram(bins = 20) +
+  geom_histogram(bins = 20, color = "black") +
   geom_vline(data = sumstat_gdd_s2_by_species, aes(xintercept = m, color = species)) +
   facet_wrap( ~species, ncol = 1) +
-  scale_fill_manual(values = my_pal) +
-  scale_color_manual(values = my_pal) +
+  scale_fill_manual(values = my_pal_species) +
+  scale_color_manual(values = my_pal_species) +
   theme_bw() +
   labs(title = "GDD Stage 2",
        subtitle = "split by Species, all Cohorts combined",
@@ -248,7 +320,39 @@ ggsave(filename = "gdd_s2_by_species.png", device = png, plot = gdd_s2_by_specie
 
 ### petraea quite later, but peak at same time. median same for all three
 
-
+## Raincloud by species
+ggplot(df_gdd_s2, aes(x = species, y = gdd_above_5, 
+                      colour = species, fill = species, alpha = 0.5)) +
+  ggdist::stat_halfeye(
+    adjust = 0.5,
+    width = 0.6,
+    justification = -.2,
+    .width = 0,
+    point_colour = NA
+  ) +
+  geom_boxplot(
+    width = .12,
+    show.legend = FALSE
+  ) +
+  ggdist::stat_dots(
+    position = "dodge",
+    scale = 0.5,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    show.legend = FALSE
+  ) +
+  coord_cartesian(xlim = c(1.2, NA)) +
+  scale_y_continuous(breaks = seq(100, 400, 50)) +
+  scale_fill_manual(values = my_pal_species) +
+  scale_color_manual(values = my_pal_species) +
+  theme_bw() +
+  theme(legend.position = c(0.9, 0.9)) +
+  labs(x = "Species",
+       y = "Growing Degree Days",
+       colour = "Species") +
+  scale_alpha(guide = "none") +
+  labs(fill = "Species", colour = "Species")
 
 
 
@@ -389,23 +493,27 @@ ggplot(data = df_gdd_s2,
 # all sites for robur 
 gdd_above_5_robur_by_site <- stage_2_for_analysis %>% 
   filter(species == "Q.robur") %>%
+  mutate(site_name = reorder(site_name, latitude)) %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = site_name)) +
+                       fill = site_name, alpha = 0.7)) +
   geom_histogram(bins = 40, colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set3") +
+  scale_fill_manual(values = my_pal) +
   labs(title = "GDD above 5 until Stage 2 for Q. robur", 
        subtitle = "split by Site, all Cohorts",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Site name") +
   xlim(100, 400) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  guides(alpha = "none", fill = "none") +
+  theme_bw()
 
-
+# print
 gdd_above_5_robur_by_site
 
+# save
 ggsave(filename = "gdd_above_5_robur_by_site.png", 
        device = png, width = 5,
        plot = gdd_above_5_robur_by_site, 
@@ -413,24 +521,29 @@ ggsave(filename = "gdd_above_5_robur_by_site.png",
 
 
 # all sites for robur, by site and cohort 
-gdd_above_5_robur_by_site_and_cohort <- stage_2_for_analysis %>% 
+gdd_above_5_robur_by_site_and_cohort <- df_gdd_s2 %>% 
   filter(species == "Q.robur") %>%
+  mutate(site_name = reorder(site_name, latitude)) %>%
   ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = cohort)) +
+                       fill = cohort, alpha = 0.5)) +
   geom_histogram(bins = 40, position = "dodge", colour = "black") +
   geom_density(alpha = 0.5) +
   facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
+  scale_fill_manual(values = my_pal_cohorts) +
   labs(title = "GDD above 5 until Stage 2 for Q. robur", 
-       subtitle = "split by Site and Cohort",
+       subtitle = "split by Site and Cohort, ordered by Latitude",
        x = "Growing Degree Days",
        y = "Frequency",
        fill = "Cohort") +
-  xlim(100, 400) +
-  ylim(0, 0.1)
+  xlim(100, 350) +
+  ylim(0, 0.1) +
+  guides(alpha = "none") +
+  theme_bw()
 
 
+# print
 gdd_above_5_robur_by_site_and_cohort
+
 ggsave(filename = "gdd_above_5_robur_by_site_and_cohort.png", 
        device = png, width = 5, height = 10,
        plot = gdd_above_5_robur_by_site_and_cohort,
@@ -458,8 +571,13 @@ robur_gdd_lat <- df_gdd_s2 %>%
   scale_color_manual(values = my_pal) +
   guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
 
-# no pattern
+# print
+robur_gdd_lat
+
+# save
 ggsave(filename = "robur_gdd-lat.png", device = png, plot = robur_gdd_lat, path = "output/figs")
+
+# no pattern
 
 
 # without Bosco Pantano
@@ -480,7 +598,7 @@ robur_gdd_lat_no_bosco <- df_gdd_s2 %>%
        y = "Growing Degree Days",
        colour = "Collection Site") +
   scale_alpha(guide = "none") +
-  scale_color_manual(values = my_pal) +
+  scale_color_manual(values = my_pal[c(2:10)]) +
   guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
 
 robur_gdd_lat_no_bosco
@@ -552,7 +670,7 @@ robur_gdd_alt_no_bosco <- df_gdd_s2 %>%
        y = "Growing Degree Days",
        colour = "Collection Site") +
   scale_alpha(guide = "none") +
-  scale_color_manual(values = my_pal) +
+  scale_color_manual(values = my_pal[c(2:10)]) +
   guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
 
 robur_gdd_alt_no_bosco
@@ -588,8 +706,8 @@ robur_gdd_austrians <- df_robur_gdd_austrians %>%
 #  geom_vline(data = sumstat_robur_gdd_austrians, aes(xintercept = m, color = site_name)) +
   geom_vline(data = sumstat_robur_gdd_austrians, aes(xintercept = m, color = site_name)) +  
   facet_grid(site_name ~ cohort) +
-  scale_fill_manual(values = my_pal) +
-  scale_color_manual(values = my_pal, breaks = site_order) +  
+  scale_fill_manual(values = my_pal[c(8,7,5,9)]) +
+  scale_color_manual(values = my_pal[c(7,9,5,8)]) +  
   theme_bw() +
   labs(title = "GDD Stage 2: The Austrians",
        subtitle = "split by Collection Site, all Cohorts split, ordered by mean GDD",
@@ -609,103 +727,76 @@ write.csv(sumstat_robur_gdd_austrians, file = "output/tables/robur_gdd_austrians
 
 
 
+# ### Growing Degree Days for Q. Robur by Site
+# ## make a plot of doy by site_name
+# q_robur <- filter(df_doy_s2, species == "Q.robur")
+# 
+# ggplot(q_robur, aes(x = reorder(site_name, site_wet), y = gdd_above_5, 
+#                                  colour = site_name, fill = site_name, alpha = 0.5)) +
+#   ggdist::stat_halfeye(
+#     adjust = 0.5,
+#     width = 0.6,
+#     justification = -.2,
+#     .width = 0,
+#     point_colour = NA
+#   ) +
+#   geom_boxplot(
+#     width = .12,
+#     show.legend = FALSE
+#   ) +
+#   ggdist::stat_dots(
+#     position = "dodge",
+#     scale = 0.5,
+#     side = "left",
+#     dotsize = 1,
+#     justification = 1.2,
+#     show.legend = FALSE
+#   ) +
+# 
+#   coord_cartesian(xlim = c(1.2, NA)) +
+# #  scale_y_continuous(breaks = seq(100, 150, 10)) +
+#   theme_bw() +
+#   labs(x = "Site name",
+#        y = "Growing Degree Days") +
+#   scale_alpha(guide = "none") +
+#   labs(fill = "Site", colour = "Site") +
+#   facet_wrap( ~ age)
+# acorns_only <- subset(stage_2_for_analysis, stage_2_for_analysis$age == 2)
+# 
+# 
+# ggplot(q_robur, aes(x = reorder(site_name, altitude), y = gdd_above_5, 
+#                                  colour = site_name, fill = site_name, alpha = 0.5)) +
+#   ggdist::stat_halfeye(
+#     adjust = 0.5,
+#     width = 0.6,
+#     justification = -.2,
+#     .width = 0,
+#     point_colour = NA
+#   ) +
+#   geom_boxplot(
+#     width = .12,
+#     show.legend = FALSE
+#   ) +
+#   ggdist::stat_dots(
+#     position = "dodge",
+#     scale = 0.5,
+#     side = "left",
+#     dotsize = 1,
+#     justification = 1.2,
+#     show.legend = FALSE
+#   ) +
+#   coord_cartesian(xlim = c(1.2, NA)) +
+#   scale_y_continuous(breaks = seq(100, 400, 50)) +
+#   theme_bw() +
+#   theme(legend.position = c(0.9, 0.9)) +
+#   theme(axis.text = element_text(angle = 90)) +
+#   labs(x = "Species",
+#        y = "Growing Degree Days",
+#        colour = "Species") +
+#   scale_alpha(guide = "none") +
+#   labs(fill = "Species", colour = "Species") +
+#   facet_wrap( ~ age)
 
-
-
-
-
-
-
-
-
-
-
-
-
-#### First Data Viz ####
-
-
-
-## raincloud
-# means by species
-means <- stage_2_for_analysis %>%
-  group_by(species) %>%
-  summarize(m = mean(doy_stage_2))
-counts <- stage_2_for_analysis %>%
-  group_by(species) %>%
-  summarise(n = n())
-
-# plot
-ggplot(stage_2_for_analysis, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens", "Q.petraea"), 
-                                 y = doy_stage_2, 
-                                 colour = species, fill = species)) +
-  ggdist::stat_halfeye(
-    breaks = 14,
-    adjust = 0.5,
-    width = 0.6,
-    justification = -.2,
-    .width = 0,
-    point_colour = NA,
-    alpha = 0.6,
-    show.legend = FALSE
-  ) +
-  geom_boxplot(
-    width = .12,
-    alpha = 0.6,
-    show.legend = FALSE
-  ) +
-  ggdist::stat_dots(
-    position = "dodge",
-    scale = 0.4,
-    side = "left",
-    dotsize = 1,
-    justification = 1.2,
-    alpha = 0.6,
-    show.legend = FALSE
-  ) +
-  # annotate mean and n
-  annotate(
-    "text",
-    x = 3.5, 
-    y = 170,
-    label = paste("n = ", counts[1,2], "mean =", round(means[1,2],2)),
-    colour = Dark2palette[1]
-  ) +
-  annotate(
-    "text",
-    x = 2.5, 
-    y = 170,
-    label = paste("n = ", counts[2,2], "mean =", round(means[2,2],2)),
-    colour = Dark2palette[2]
-  ) +
-  annotate(
-    "text",
-    x = 1.5, 
-    y = 170,
-    label = paste("n = ", counts[3,2], "mean =", round(means[3,2],2)),
-    colour = Dark2palette[3]
-  ) +
-  coord_flip(xlim = c(1, NA), ylim = c(90, 180), expand = TRUE, clip = "on") +
-  scale_x_discrete(breaks = seq(100, 400, 50)) +
-  theme_bw() +
-  theme(legend.position = c(0.9, 0.2)) +
-  labs(x = "Species",
-       y = "DOY Stage 2",
-       colour = "Species") +
-  scale_alpha(guide = "none") +
-  labs(fill = "Species", colour = "Species") +
-  scale_fill_brewer(palette = "Set2") +
-  scale_color_brewer(palette = "Dark2")
-
-
-
-
-
-
-
-
- #####
- #####
 
 
 
@@ -861,111 +952,7 @@ stage_2_for_analysis %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
 
 
-### Rainclouds ####
-## make a raincloudplot of gdd by species
-ggplot(stage_2_for_analysis, aes(x = species, y = cum_temp_above_5, 
-                                 colour = species, fill = species, alpha = 0.5)) +
-  ggdist::stat_halfeye(
-    adjust = 0.5,
-    width = 0.6,
-    justification = -.2,
-    .width = 0,
-    point_colour = NA
-  ) +
-  geom_boxplot(
-    width = .12,
-    show.legend = FALSE
-  ) +
-  ggdist::stat_dots(
-    position = "dodge",
-    scale = 0.5,
-    side = "left",
-    dotsize = 1,
-    justification = 1.2,
-    show.legend = FALSE
-  ) +
-  coord_cartesian(xlim = c(1.2, NA)) +
-  scale_y_continuous(breaks = seq(100, 400, 50)) +
-  theme_bw() +
-  theme(legend.position = c(0.9, 0.9)) +
-  labs(x = "Species",
-       y = "Growing Degree Days",
-       colour = "Species") +
-  scale_alpha(guide = "none") +
-  labs(fill = "Species", colour = "Species")
 
-
-### Growing Degree Days for Q. Robur by Site
-## make a plot of doy by site_name
-q_robur <- filter(stage_2_for_analysis, species == "Q.robur")
-
-ggplot(q_robur, aes(x = reorder(site_name, site_wet), y = cum_temp_above_5, 
-                                 colour = site_name, fill = site_name, alpha = 0.5)) +
-  ggdist::stat_halfeye(
-    adjust = 0.5,
-    width = 0.6,
-    justification = -.2,
-    .width = 0,
-    point_colour = NA
-  ) +
-  geom_boxplot(
-    width = .12,
-    show.legend = FALSE
-  ) +
-  ggdist::stat_dots(
-    position = "dodge",
-    scale = 0.5,
-    side = "left",
-    dotsize = 1,
-    justification = 1.2,
-    show.legend = FALSE
-  ) +
-
-  coord_cartesian(xlim = c(1.2, NA)) +
-#  scale_y_continuous(breaks = seq(100, 150, 10)) +
-  theme_bw() +
-  labs(x = "Site name",
-       y = "Growing Degree Days") +
-  scale_alpha(guide = "none") +
-  labs(fill = "Site", colour = "Site") +
-  facet_wrap( ~ age)
-
-
-acorns_only <- subset(stage_2_for_analysis, stage_2_for_analysis$age == 2)
-
-
-ggplot(q_robur, aes(x = reorder(site_name, altitude), y = cum_temp_above_5, 
-                                 colour = site_name, fill = site_name, alpha = 0.5)) +
-  ggdist::stat_halfeye(
-    adjust = 0.5,
-    width = 0.6,
-    justification = -.2,
-    .width = 0,
-    point_colour = NA
-  ) +
-  geom_boxplot(
-    width = .12,
-    show.legend = FALSE
-  ) +
-  ggdist::stat_dots(
-    position = "dodge",
-    scale = 0.5,
-    side = "left",
-    dotsize = 1,
-    justification = 1.2,
-    show.legend = FALSE
-  ) +
-  coord_cartesian(xlim = c(1.2, NA)) +
-  scale_y_continuous(breaks = seq(100, 400, 50)) +
-  theme_bw() +
-  theme(legend.position = c(0.9, 0.9)) +
-  theme(axis.text = element_text(angle = 90)) +
-  labs(x = "Species",
-       y = "Growing Degree Days",
-       colour = "Species") +
-  scale_alpha(guide = "none") +
-  labs(fill = "Species", colour = "Species") +
-  facet_wrap( ~ age)
 
 
 ### pubescens ###
@@ -1023,97 +1010,9 @@ stage_2_for_analysis %>%
 KG_robur %>%
   dplyr::select(site_name, longitude, latitude, climate)
 
-stage_2_for_analysis %>%
-  filter(species == "Q.robur") %>%
-  filter(cohort == "2023_3") %>%
-  group_by(site_name) %>%
-  summarise(mean_doy = mean(doy_stage_2))
 
 
-4 Schönberg_am_Kamp     108.  2022 2        350
-2 Bosco_Pantano         109.  2023 2  Csa   10
-4 Schönberg_am_Kamp     111.  2023_3        350
-1 Altenhof_am_Kamp      112.  2022 2        250  
-2 Diendorf_am_Walde     115.  2022 2        350
-3 Planck_am_Kamp        115.  2022 2        250
-1 Altenhof_am_Kamp      116.  2023_3        250
-10 Schönberg_am_Kamp    118.  2023 2        350
-5 Groane                119.  2023 2  Cfa   250
-8 Locarno               120.  2023 2        200
-2 Diendorf_am_Walde     120.  2023_3        350
-3 Planck_am_Kamp        120.  2023_3        250
-1 Altenhof_am_Kamp      121.  2023 2        250
-3 Cestas                122.  2023 2        50
-4 Diendorf_am_Walde     122.  2023 2        350
-6 Guca                  122.  2023 2        400
-7 Laveyron              122.  2023 2  Cfa   150
-9 Planck_am_Kamp        122.  2023 2        250
 
 
-4 Schönberg_am_Kamp     108.  2022 2        350
-4 Schönberg_am_Kamp     111.  2023_3        350
-1 Altenhof_am_Kamp      112.  2022 2        250  
-2 Diendorf_am_Walde     115.  2022 2        350
-3 Planck_am_Kamp        115.  2022 2        250
-1 Altenhof_am_Kamp      116.  2023_3        250
-10 Schönberg_am_Kamp    118.  2023 2        350
-2 Diendorf_am_Walde     120.  2023_3        350
-3 Planck_am_Kamp        120.  2023_3        250
-1 Altenhof_am_Kamp      121.  2023 2        250
-4 Diendorf_am_Walde     122.  2023 2        350
-9 Planck_am_Kamp        122.  2023 2        250
 
 
-4 Schönberg_am_Kamp     108.  2022 2        350
-1 Altenhof_am_Kamp      112.  2022 2        250  
-2 Diendorf_am_Walde     115.  2022 2        350
-3 Planck_am_Kamp        115.  2022 2        250
-
-4 Schönberg_am_Kamp     111.  2023_3        350
-1 Altenhof_am_Kamp      116.  2023_3        250
-2 Diendorf_am_Walde     120.  2023_3        350
-3 Planck_am_Kamp        120.  2023_3        250
-
-10 Schönberg_am_Kamp    118.  2023 2        350
-1 Altenhof_am_Kamp      121.  2023 2        250
-4 Diendorf_am_Walde     122.  2023 2        350
-9 Planck_am_Kamp        122.  2023 2        250
-
-
-stage_2_for_analysis %>%
-  filter(species == "Q.robur") %>%
-  filter(cohort == "2023_3") %>%
-  group_by(site_name) %>%
-  summarise(mean_gdd = mean(gdd_above_5))
-
-10 Schönberg_am_Kamp            198.
-1 Altenhof_am_Kamp             212.
-9 Planck_am_Kamp               226.
-4 Diendorf_am_Walde            230.
-
-4 Schönberg_am_Kamp     171.
-1 Altenhof_am_Kamp      188.
-3 Planck_am_Kamp        208.
-2 Diendorf_am_Walde     214.
-
-
-DOY
-2 Bosco_Pantano         109.  2023 2  Csa   10
-5 Groane                119.  2023 2  Cfa   250
-8 Locarno               120.  2023 2        200
-3 Cestas                122.  2023 2        50
-6 Guca                  122.  2023 2        400
-7 Laveyron              122.  2023 2  Cfa   150
-
-stage_2_for_analysis %>%
-  filter(species == "Q.robur") %>%
-  filter(cohort == "2023_2") %>%
-  group_by(site_name) %>%
-  summarise(mean_gdd = mean(gdd_above_5))
-
-2 Bosco_Pantano                164.
-5 Groane                       202.
-8 Locarno                      212.
-3 Cestas                       224.
-6 Guca                         224.
-7 Laveyron(Tarbes/landouc)     224.
