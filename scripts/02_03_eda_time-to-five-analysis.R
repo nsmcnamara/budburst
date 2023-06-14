@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Time to 5 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-08
+### Last update:  2023-06-14
 ### Simone McNamara
 
 
@@ -8,7 +8,6 @@
 # libraries
 library(tidyverse)
 library(GGally)
-library(RColorBrewer)
 library(ggrepel)
 
 # Palette
@@ -167,16 +166,97 @@ df_gdd_2_to_5_clean %>%
 
 # this matches findings by Ducousso et al 1995
 # https://www.afs-journal.org/articles/forest/pdf/1996/02/AFS_0003-4312_1996_53_2-3_ART0053.pdf
-# Therefore the latest origins are more tolerant to frost by avoidance and resistance. 
+# Their conclusion: Therefore the latest origins are more tolerant to frost by avoidance and resistance. 
+
+
+# wilkinson et al 2017
+# https://link.springer.com/article/10.1007/s10342-016-0998-z
+# Variation with latitude, altitude and continentality
+# 
+# The date of budburst was linearly related to latitude of origin with provenances 
+# from southern latitudes consistently leafing out earlier than those from more northerly latitudes, 
+# but there was significant variation across years. 
+# The relationship with the highest sensitivity (1.28 days later per degree north) occurred in 2006, 
+# whilst the lowest (0.44 days per degree north) was in 2013 (Fig. 3). 
+# Including altitude or continentality (either singularly or combined) 
+# did not significantly improve the fit of the GLM (data not shown).
+# --> they have the opposite pattern in terms of latitude
+
+# These results demonstrate that spring temperature during the heat accumulation period 
+# was the dominant environmental driver of budburst date; 
+# mean daily air temperature during the winter chilling temperature had a much smaller, 
+# yet still significant effect.
 
 
 
 
 
+#### Q. ROBUR ####
+# ALL COHORTS BY LATITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# less gdd with increasing latitude
+# ie the further north we go, the less warming is needed to complete budburst
+# same pattern as for all species
 
+# COHORTS SPLIT BY LATITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%  
+  ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  ) +
+  facet_wrap(~ cohort)
+# shorter gdd with increasing latitude
+# ie the further north we go, the less warming is needed
+# same pattern as for all species
+# BUT: kizilcahamam is at 1454
+# but pattern also holds for 3yo withou kizilcahamam
 
+# ALL COHORTS BY ALTITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%  
+  ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+# longer gdd with increasing altitude
+# ie the further up we go, the more warming is needed
+# same pattern as for all species
+# BUT: SEE ABOVE 
 
-
+# COHORTS SPLIT BY ALTITUDE
+df_gdd_2_to_5_clean %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%  
+  ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
+                       color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  ) +
+  facet_wrap(~ cohort)
 
 
 
