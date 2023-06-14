@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Stage 2 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-13
+### Last update:  2023-06-14
 ### Simone McNamara
 
 
@@ -43,8 +43,7 @@ df_gdd_s2 <- stage_2_for_analysis %>%
 
 
 
-#### PLOT THE DATA ####
-#### Dist of Single Variables ####
+#### Plot the Data ####
 #### DOY ####
 
 
@@ -116,7 +115,68 @@ ggsave(filename = "doy_s2_by_species.png", device = png, plot = doy_s2_by_specie
 #### DOY 2023 ####
 # since so far I only have weather data for 2023 and I want to compare doy and gdd,
 # I should have the same plot as above but for 2023 only.
+# when we have weather data for 2022, can be removed.
 
+## DOY by ALL ##
+# summary stats
+sumstat_doy_s2_23 <- df_gdd_s2 %>%
+  summarize(n = n(),
+            m = mean(doy_stage_2), 
+            var = var(doy_stage_2),
+            sd = sd(doy_stage_2))
+
+# histogram
+doy_s2_23_all <- ggplot(data = df_gdd_s2, 
+                          mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
+  geom_histogram(bins = 20) +
+  geom_vline(xintercept = sumstat_doy_s2_23$m, color = "red") +
+  theme_bw() +
+  labs(title = "DOY Stage 2, all",
+       x = "DOY Stage 2",
+       y = "Frequency") +
+  guides(alpha = "none")
+
+# print
+doy_s2_23_all
+### +/- 120 days for stage 2
+
+# save
+ggsave(filename = "doy_s2_23_all.png", device = png, plot = doy_s2_23_all, path = "output/figs")
+
+
+
+
+## DOY by Species ##
+# summary stats
+sumstat_doy_s2_23_by_species <- df_gdd_s2 %>%
+  group_by(species) %>%
+  summarize(n = n(),
+            m = mean(doy_stage_2), 
+            var = var(doy_stage_2),
+            sd = sd(doy_stage_2))
+# histogram
+doy_s2_23_by_species <- ggplot(df_gdd_s2, 
+                            mapping = aes(doy_stage_2, 
+                                          fill = species, alpha = 0.7)) +
+  geom_histogram(bins = 20) +
+  geom_vline(data = sumstat_doy_s2_23_by_species, aes(xintercept = m, color = species)) +
+  facet_wrap(~species, ncol = 1) +
+  scale_fill_manual(values = my_pal) +
+  scale_color_manual(values = my_pal) +
+  theme_bw() +
+  labs(title = "DOY Stage 2, split by Species, all cohorts combined",
+       x = "DOY Stage 2",
+       y = "Frequency") +
+  guides(alpha = "none", color = "none", fill = "none")
+
+# print
+doy_s2_23_by_species
+
+# save
+ggsave(filename = "doy_s2_23_by_species.png", device = png, plot = doy_s2_23_by_species, path = "output/figs")
+
+### very similar distributions.
+### +/- 120 days for stage 2
 
 
 #### GDD ####
@@ -147,8 +207,6 @@ gdd_s2_all
 # save 
 ggsave(filename = "gdd_s2_all.png", device = png, plot = gdd_s2_all, path = "output/figs")
 ### +/- 200 gdd for stage 2
-
-
 
 
   
@@ -188,7 +246,6 @@ ggsave(filename = "gdd_s2_by_species.png", device = png, plot = gdd_s2_by_specie
 
 ### all around 200, but seem quite different
 ### pubescens early, petraea, then robur
-
 
 
 
@@ -262,40 +319,42 @@ ggsave(filename = "gdd_s2_by_species.png", device = png, plot = gdd_s2_by_specie
 # yes obviously... it varies more by altitude than by latitude..
 
 
-df_gdd_s2_isik <- df_gdd_to_stage_2 %>%
-  filter(site_name == "Işık Dağı")
-df_gdd_s2_isik_num <- df_gdd_s2_isik %>%
-  select(altitude, latitude, doy_stage_2, gdd_above_5, age)
-pca_isik_res <- prcomp(df_gdd_s2_isik_num)
-p <- autoplot(pca_isik_res, data = df_gdd_s2_isik, colour = "mother_id",
-              loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
-ggplotly(p)
-scores <- pca_isik_res$x
-pca_isik_df <- cbind(df_gdd_s2_isik, scores)
-
-ggplot(pca_isik_df, aes(PC1, PC2, colour = mother_id)) +
-  geom_point() +
-  stat_ellipse(geom = "polygon", aes(fill = mother_id),
-               alpha = 0.2,
-               show.legend = FALSE,
-               level = 0.95)
+# df_gdd_s2_isik <- df_gdd_s2 %>%
+#   filter(site_name == "Işık Dağı")
+# df_gdd_s2_isik_num <- df_gdd_s2_isik %>%
+#   select(altitude, latitude, doy_stage_2, gdd_above_5, age)
+# pca_isik_res <- prcomp(df_gdd_s2_isik_num)
+# p <- autoplot(pca_isik_res, data = df_gdd_s2_isik, colour = "mother_id",
+#               loadings = TRUE, loadings.colour = "blue", loadings.label = TRUE, loadings.label.size = 3)
+# ggplotly(p)
+# 
+# scores <- pca_isik_res$x
+# pca_isik_df <- cbind(df_gdd_s2_isik, scores)
+# 
+# ggplot(pca_isik_df, aes(PC1, PC2, colour = mother_id)) +
+#   geom_point() +
+#   stat_ellipse(geom = "polygon", aes(fill = mother_id),
+#                alpha = 0.2,
+#                show.legend = FALSE,
+#                level = 0.95)
 
 ### revealed nothing really, other than that Turkish ones are a bit different
 # because their distribution in terms of altitude is really quite different
+# PC1 maybe too strong.
 
-
-#### ALL SPECIES ####
-# ALL SPECIES BY AlTITUDE
+#### CORR w EXPL ####
+## ALL SPECIES BY AlTITUDE ##
 ggplot(data = df_gdd_s2 %>%
          filter(site_name != "Bosco_Pantano"),
        mapping = aes(x = altitude, y = gdd_above_5,
-                     color = site_name)) +
+                     color = reorder(site_name, altitude))) +
   geom_point() +
   geom_smooth(
     method = "lm",
     se = FALSE,
     color = "blue"
   )
+
 # slightly earlier gdd by stage 2 with increasing altitude, but doubt significance
 # ie the further up, the less warming required to start budburst
 # much more pronounced w/o Bosco Pantano
