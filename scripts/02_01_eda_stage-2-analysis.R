@@ -56,10 +56,10 @@ sumstat_doy_s2_all <- df_doy_s2 %>%
             sd = sd(doy_stage_2))
 
 # histogram
-doy_stage_2_all <- ggplot(data = df_doy_s2, 
+doy_s2_all <- ggplot(data = df_doy_s2, 
                           mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
   geom_histogram(bins = 20) +
-  geom_vline(xintercept = mean_doy_s2, color = "red") +
+  geom_vline(xintercept = sumstat_doy_s2_all$m, color = "red") +
   theme_bw() +
   labs(title = "DOY Stage 2, all",
        x = "DOY Stage 2",
@@ -67,11 +67,11 @@ doy_stage_2_all <- ggplot(data = df_doy_s2,
   guides(alpha = "none")
 
 # print
-doy_stage_2_all
+doy_s2_all
 ### +/- 120 days for stage 2
 
 # save
-ggsave(filename = "doy_s2_all.png", device = png, plot = doy_stage_2_all, path = "output/figs")
+ggsave(filename = "doy_s2_all.png", device = png, plot = doy_s2_all, path = "output/figs")
 
 
 
@@ -110,73 +110,73 @@ ggsave(filename = "doy_s2_by_species.png", device = png, plot = doy_s2_by_specie
 ### very similar distributions.
 ### +/- 120 days for stage 2
 
+# 
+# 
+# #### DOY 2023 ####
+# # since so far I only have weather data for 2023 and I want to compare doy and gdd,
+# # I should have the same plot as above but for 2023 only.
+# # when we have weather data for 2022, can be removed.
+# 
+# ## DOY by ALL ##
+# # summary stats
+# sumstat_doy_s2_23 <- df_gdd_s2 %>%
+#   summarize(n = n(),
+#             m = mean(doy_stage_2), 
+#             var = var(doy_stage_2),
+#             sd = sd(doy_stage_2))
+# 
+# # histogram
+# doy_s2_23_all <- ggplot(data = df_gdd_s2, 
+#                           mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
+#   geom_histogram(bins = 20) +
+#   geom_vline(xintercept = sumstat_doy_s2_23$m, color = "red") +
+#   theme_bw() +
+#   labs(title = "DOY Stage 2, 2023 only",
+#        x = "DOY Stage 2",
+#        y = "Frequency") +
+#   guides(alpha = "none")
+# 
+# # print
+# doy_s2_23_all
+# ### +/- 120 days for stage 2
+# 
+# # save
+# ggsave(filename = "doy_s2_23_all.png", device = png, plot = doy_s2_23_all, path = "output/figs")
+# 
+# 
+# 
+# 
+# ## DOY by Species ##
+# # summary stats
+# sumstat_doy_s2_23_by_species <- df_gdd_s2 %>%
+#   group_by(species) %>%
+#   summarize(n = n(),
+#             m = mean(doy_stage_2), 
+#             var = var(doy_stage_2),
+#             sd = sd(doy_stage_2))
+# # histogram
+# doy_s2_23_by_species <- ggplot(df_gdd_s2, 
+#                             mapping = aes(doy_stage_2, 
+#                                           fill = species, alpha = 0.7)) +
+#   geom_histogram(bins = 20) +
+#   geom_vline(data = sumstat_doy_s2_23_by_species, aes(xintercept = m, color = species)) +
+#   facet_wrap(~species, ncol = 1) +
+#   scale_fill_manual(values = my_pal) +
+#   scale_color_manual(values = my_pal) +
+#   theme_bw() +
+#   labs(title = "DOY Stage 2, split by Species, 2023 only",
+#        x = "DOY Stage 2",
+#        y = "Frequency") +
+#   guides(alpha = "none", color = "none", fill = "none")
+# 
+# # print
+# doy_s2_23_by_species
+# 
+# # save
+# ggsave(filename = "doy_s2_23_by_species.png", device = png, plot = doy_s2_23_by_species, path = "output/figs")
 
-
-#### DOY 2023 ####
-# since so far I only have weather data for 2023 and I want to compare doy and gdd,
-# I should have the same plot as above but for 2023 only.
-# when we have weather data for 2022, can be removed.
-
-## DOY by ALL ##
-# summary stats
-sumstat_doy_s2_23 <- df_gdd_s2 %>%
-  summarize(n = n(),
-            m = mean(doy_stage_2), 
-            var = var(doy_stage_2),
-            sd = sd(doy_stage_2))
-
-# histogram
-doy_s2_23_all <- ggplot(data = df_gdd_s2, 
-                          mapping = aes(doy_stage_2, after_stat(density), alpha = 0.8)) +
-  geom_histogram(bins = 20) +
-  geom_vline(xintercept = sumstat_doy_s2_23$m, color = "red") +
-  theme_bw() +
-  labs(title = "DOY Stage 2, all",
-       x = "DOY Stage 2",
-       y = "Frequency") +
-  guides(alpha = "none")
-
-# print
-doy_s2_23_all
-### +/- 120 days for stage 2
-
-# save
-ggsave(filename = "doy_s2_23_all.png", device = png, plot = doy_s2_23_all, path = "output/figs")
-
-
-
-
-## DOY by Species ##
-# summary stats
-sumstat_doy_s2_23_by_species <- df_gdd_s2 %>%
-  group_by(species) %>%
-  summarize(n = n(),
-            m = mean(doy_stage_2), 
-            var = var(doy_stage_2),
-            sd = sd(doy_stage_2))
-# histogram
-doy_s2_23_by_species <- ggplot(df_gdd_s2, 
-                            mapping = aes(doy_stage_2, 
-                                          fill = species, alpha = 0.7)) +
-  geom_histogram(bins = 20) +
-  geom_vline(data = sumstat_doy_s2_23_by_species, aes(xintercept = m, color = species)) +
-  facet_wrap(~species, ncol = 1) +
-  scale_fill_manual(values = my_pal) +
-  scale_color_manual(values = my_pal) +
-  theme_bw() +
-  labs(title = "DOY Stage 2, split by Species, all cohorts combined",
-       x = "DOY Stage 2",
-       y = "Frequency") +
-  guides(alpha = "none", color = "none", fill = "none")
-
-# print
-doy_s2_23_by_species
-
-# save
-ggsave(filename = "doy_s2_23_by_species.png", device = png, plot = doy_s2_23_by_species, path = "output/figs")
-
-### very similar distributions.
-### +/- 120 days for stage 2
+### pubescens, petraea, robur
+### same pattern as in GDD
 
 
 #### GDD ####
@@ -193,8 +193,8 @@ sumstat_gdd_s2_all <- df_gdd_s2 %>%
 # histogram
 gdd_s2_all <- ggplot(data = df_gdd_s2, 
                           mapping = aes(gdd_above_5, after_stat(density), alpha = 0.8)) +
-  geom_histogram(bins = 14) +
-  geom_vline(xintercept = mean_gdd_s2_all, color = "red") +
+  geom_histogram(bins = 20) +
+  geom_vline(xintercept = sumstat_gdd_s2_all$m, color = "red") +
   theme_bw() +
   labs(title = "GDD Stage 2, all",
        x = "GDD Stage 2",
@@ -206,7 +206,7 @@ gdd_s2_all
 
 # save 
 ggsave(filename = "gdd_s2_all.png", device = png, plot = gdd_s2_all, path = "output/figs")
-### +/- 200 gdd for stage 2
+### +/- 226 gdd for stage 2
 
 
   
@@ -218,14 +218,16 @@ sumstat_gdd_s2_by_species <- df_gdd_s2 %>%
   group_by(species) %>%
   summarize(n = n(),
             m = mean(gdd_above_5), 
+            med = median(gdd_above_5),
             var = var(gdd_above_5),
             sd = sd(gdd_above_5))
+
 
 # histogram
 gdd_s2_by_species <- ggplot(df_gdd_s2,
                                  mapping = aes(gdd_above_5, 
                                                fill = species, alpha = 0.7)) +
-  geom_histogram(bins = 14) +
+  geom_histogram(bins = 20) +
   geom_vline(data = sumstat_gdd_s2_by_species, aes(xintercept = m, color = species)) +
   facet_wrap( ~species, ncol = 1) +
   scale_fill_manual(values = my_pal) +
@@ -244,8 +246,7 @@ gdd_s2_by_species
 # save
 ggsave(filename = "gdd_s2_by_species.png", device = png, plot = gdd_s2_by_species, path = "output/figs")
 
-### all around 200, but seem quite different
-### pubescens early, petraea, then robur
+### petraea quite later, but peak at same time. median same for all three
 
 
 
@@ -342,6 +343,9 @@ ggsave(filename = "gdd_s2_by_species.png", device = png, plot = gdd_s2_by_specie
 # because their distribution in terms of altitude is really quite different
 # PC1 maybe too strong.
 
+
+
+
 #### CORR w EXPL ####
 ## ALL SPECIES BY AlTITUDE ##
 ggplot(data = df_gdd_s2 %>%
@@ -381,31 +385,62 @@ ggplot(data = df_gdd_s2,
 
 
 #### Q. ROBUR ####
-# ALL COHORTS BY LATITUDE
-df_gdd_s2 %>%
+### GDD above 5 for Q. Robur by site
+# all sites for robur 
+gdd_above_5_robur_by_site <- stage_2_for_analysis %>% 
   filter(species == "Q.robur") %>%
-  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
-                       color = site_name)) +
-  geom_point() +
-  geom_smooth(
-    method = "lm",
-    se = FALSE,
-    color = "blue"
-  )
-# slightly later gdd by stage 2 with increasing latitude
-# ie the further north, the more warming required until budburst starts
-# same pattern as with all species
-# 
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                       fill = site_name)) +
+  geom_histogram(bins = 40, colour = "black") +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set3") +
+  labs(title = "GDD above 5 until Stage 2 for Q. robur", 
+       subtitle = "split by Site, all Cohorts",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Site name") +
+  xlim(100, 400) +
+  theme(legend.position = "none")
 
-# without Bosco Pantano
-df_gdd_s2 %>%
+
+gdd_above_5_robur_by_site
+
+ggsave(filename = "gdd_above_5_robur_by_site.png", 
+       device = png, width = 5,
+       plot = gdd_above_5_robur_by_site, 
+       path = "output/figs")
+
+
+# all sites for robur, by site and cohort 
+gdd_above_5_robur_by_site_and_cohort <- stage_2_for_analysis %>% 
   filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  filter(site_name != "Schönberg_am_Kamp") %>%
-  filter(site_name != "Diendorf_am_Walde") %>%
-  filter(site_name != "Planck_am_Kamp") %>%
-  filter(site_name != "Laveyron(Tarbes/landouc)") %>%
-  
+  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
+                       fill = cohort)) +
+  geom_histogram(bins = 40, position = "dodge", colour = "black") +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~site_name, ncol = 1) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "GDD above 5 until Stage 2 for Q. robur", 
+       subtitle = "split by Site and Cohort",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Cohort") +
+  xlim(100, 400) +
+  ylim(0, 0.1)
+
+
+gdd_above_5_robur_by_site_and_cohort
+ggsave(filename = "gdd_above_5_robur_by_site_and_cohort.png", 
+       device = png, width = 5, height = 10,
+       plot = gdd_above_5_robur_by_site_and_cohort,
+       path = "output/figs")
+
+
+
+# ALL COHORTS BY LATITUDE
+robur_gdd_lat <- df_gdd_s2 %>%
+  filter(species == "Q.robur") %>%
   ggplot(mapping = aes(x = latitude, y = gdd_above_5,
                        color = reorder(site_name, latitude), size = 0.5, alpha = 0.7)) +
   geom_point(position = position_jitter(width = 0.1)) +
@@ -420,77 +455,156 @@ df_gdd_s2 %>%
        y = "Growing Degree Days",
        colour = "Collection Site") +
   scale_alpha(guide = "none") +
-  scale_color_manual(values = my_pal[c(1,2,5,6,8)]) +
+  scale_color_manual(values = my_pal) +
   guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
 
+# no pattern
+ggsave(filename = "robur_gdd-lat.png", device = png, plot = robur_gdd_lat, path = "output/figs")
 
-# pattern is reversed without Bosco Pantano
+
+# without Bosco Pantano
+robur_gdd_lat_no_bosco <- df_gdd_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
+                       color = reorder(site_name, latitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.robur, without Bosco Pantano",
+       x = "Latitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+robur_gdd_lat_no_bosco
+ggsave(filename = "robur_gdd-lat_no-bosco.png", device = png, plot = robur_gdd_lat_no_bosco, path = "output/figs")
+
+# clear pattern
 # now pattern matches with TIME TO 5 Q. petraea
 # the further north, the less warming is required
 
-# COHORTS SPLIT BY LATITUDE
-# bosco pantano removed
-df_gdd_s2 %>%
-  filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-# filter(age == "2") %>%
-  ggplot(mapping = aes(x = latitude, y = gdd_above_5,
-                       color = site_name)) +
-  geom_point() +
-  geom_smooth(
-    method = "lm",
-    se = FALSE,
-    color = "blue"
-  ) +
-  facet_wrap(~cohort)
-# can't really say anything about the 3 year 
+
+
+# # COHORTS SPLIT BY LATITUDE
+# # bosco pantano removed
+# df_gdd_s2 %>%
+#   filter(species == "Q.robur") %>%
+#   filter(site_name != "Bosco_Pantano") %>%
+# # filter(age == "2") %>%
+#   ggplot(mapping = aes(x = latitude, y = gdd_above_5,
+#                        color = site_name)) +
+#   geom_point() +
+#   geom_smooth(
+#     method = "lm",
+#     se = FALSE,
+#     color = "blue"
+#   ) +
+#   facet_wrap(~cohort)
+# # can't really say anything about the 3 year 
 
 # ALL COHORTS BY ALTITUDE
-df_gdd_to_stage_2 %>%
+robur_gdd_alt <- df_gdd_s2 %>%
   filter(species == "Q.robur") %>%
   ggplot(mapping = aes(x = altitude, y = gdd_above_5,
-                       color = site_name)) +
-  geom_point() +
+                       color = reorder(site_name, altitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
   geom_smooth(
     method = "lm",
     se = FALSE,
-    color = "blue"
-  )
-# without Bosco Pantano
-df_gdd_to_stage_2 %>%
-  filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
-                       color = site_name)) +
-  geom_point() +
-  geom_smooth(
-    method = "lm",
-    se = FALSE,
-    color = "blue"
-  )
-# again, the pattern changes w/o Bosco Pantano
-# now, less warming required for higher altitudes
-
-# COHORTS SPLIT BY ALTITUDE
-# bosco pantano removed
-df_gdd_to_stage_2 %>%
-  filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  # filter(age == "2") %>%
-  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
-                       color = site_name)) +
-  geom_point() +
-  geom_smooth(
-    method = "lm",
-    se = FALSE,
-    color = "blue"
+    color = "blue", size = 1
   ) +
-  facet_wrap(~cohort)
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.robur",
+       x = "Altitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+robur_gdd_alt
+# no pattern
+ggsave(filename = "robur_gdd-alt.png", device = png, plot = robur_gdd_alt, path = "output/figs")
 
 
+# without Bosco Pantano
+robur_gdd_alt_no_bosco <- df_gdd_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = altitude, y = gdd_above_5,
+                       color = reorder(site_name, altitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "Growing Degree Days for Q.robur, without Bosco Pantano",
+       x = "Altitude",
+       y = "Growing Degree Days",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+robur_gdd_alt_no_bosco
+ggsave(filename = "robur_gdd-alt_no-bosco.png", device = png, plot = robur_gdd_alt_no_bosco, path = "output/figs")
 
 
+## The Austrians ##
+# sumstats
 
+sumstat_robur_gdd_austrians <- df_gdd_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(country == "Austria") %>%
+  group_by(site_name, cohort) %>%
+  summarize(n = n(),
+            m = mean(gdd_above_5), 
+            var = var(gdd_above_5),
+            sd = sd(gdd_above_5))
+
+site_order <- sumstat_robur_gdd_austrians %>%
+  arrange(m) %>%
+  pull(site_name)
+
+df_robur_gdd_austrians <- df_gdd_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(country == "Austria") %>%
+  mutate(site_name = factor(site_name, levels = site_order))
+
+
+robur_gdd_austrians <- df_robur_gdd_austrians %>%
+  ggplot(mapping = aes(gdd_above_5, 
+                      fill = site_name, alpha = 0.7)) +
+  geom_histogram(bins = 10, color = "black") +
+#  geom_vline(data = sumstat_robur_gdd_austrians, aes(xintercept = m, color = site_name)) +
+  geom_vline(data = sumstat_robur_gdd_austrians, aes(xintercept = m, color = site_name)) +  
+  facet_grid(site_name ~ cohort) +
+  scale_fill_manual(values = my_pal) +
+  scale_color_manual(values = my_pal, breaks = site_order) +  
+  theme_bw() +
+  labs(title = "GDD Stage 2: The Austrians",
+       subtitle = "split by Collection Site, all Cohorts split, ordered by mean GDD",
+       x = "Growing Degree Days",
+       y = "Frequency",
+       fill = "Collection Site") +
+  guides(fill = "none", alpha = "none", color = "none")
+
+# print
+robur_gdd_austrians
+
+# save
+ggsave(filename = "robur_gdd_austrians.png", device = png, plot = robur_gdd_austrians, path = "output/figs")
+
+write.csv(sumstat_robur_gdd_austrians, file = "output/tables/robur_gdd_austrians.csv", row.names = FALSE)
 
 
 
@@ -719,59 +833,6 @@ gdd_above_5_pubescens_by_site_and_cohort
 ggsave(filename = "gdd_above_5_pubescens_by_site_and_cohort.png", 
        device = png, width = 5, height = 8,
        plot = gdd_above_5_pubescens_by_site_and_cohort,
-       path = "output/figs")
-
-#### Robur ####
-### GDD above 5 for Q. Robur by site
-
-# all sites for robur 
-gdd_above_5_robur_by_site <- stage_2_for_analysis %>% 
-  filter(species == "Q.robur") %>%
-  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = site_name)) +
-  geom_histogram(bins = 40, colour = "black") +
-  geom_density(alpha = 0.5) +
-  facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set3") +
-  labs(title = "GDD above 5 until Stage 2 for Q. robur", 
-       subtitle = "split by Site, all Cohorts",
-       x = "Growing Degree Days",
-       y = "Frequency",
-       fill = "Site name") +
-  xlim(100, 400) +
-  theme(legend.position = "none")
-
-
-gdd_above_5_robur_by_site
-
-ggsave(filename = "gdd_above_5_robur_by_site.png", 
-       device = png, width = 5,
-       plot = gdd_above_5_robur_by_site, 
-       path = "output/figs")
-
-
-# all sites for robur, by site and cohort 
-gdd_above_5_robur_by_site_and_cohort <- stage_2_for_analysis %>% 
-  filter(species == "Q.robur") %>%
-  ggplot(mapping = aes(x = gdd_above_5, y = ..density..,
-                       fill = cohort)) +
-  geom_histogram(bins = 40, position = "dodge", colour = "black") +
-  geom_density(alpha = 0.5) +
-  facet_wrap(~site_name, ncol = 1) +
-  scale_fill_brewer(palette = "Set2") +
-  labs(title = "GDD above 5 until Stage 2 for Q. robur", 
-       subtitle = "split by Site and Cohort",
-       x = "Growing Degree Days",
-       y = "Frequency",
-       fill = "Cohort") +
-  xlim(100, 400) +
-  ylim(0, 0.1)
-
-
-gdd_above_5_robur_by_site_and_cohort
-ggsave(filename = "gdd_above_5_robur_by_site_and_cohort.png", 
-       device = png, width = 5, height = 10,
-       plot = gdd_above_5_robur_by_site_and_cohort,
        path = "output/figs")
 
 
