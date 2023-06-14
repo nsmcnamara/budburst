@@ -52,7 +52,7 @@ df_gdd_s2 <- stage_2_for_analysis %>%
 ## DOY by ALL ##
 # summary stats
 sumstat_doy_s2_all <- df_doy_s2 %>%
-  summarize(n = n(),
+  dplyr::summarize(n = n(),
             m = mean(doy_stage_2), 
             var = var(doy_stage_2),
             sd = sd(doy_stage_2))
@@ -116,22 +116,22 @@ ggplot(df_doy_s2, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens"
   annotate(
     "text",
     x = 3.5, 
-    y = 170,
-    label = paste("n = ", counts[1,2], "mean =", round(means[1,2],2)),
+    y = 165,
+    label = paste("Q. petraea, ", "n = ", counts[1,2], "mean =", round(means[1,2],2)),
     colour = my_pal_species[1]
   ) +
   annotate(
     "text",
     x = 2.5, 
-    y = 170,
-    label = paste("n = ", counts[2,2], "mean =", round(means[2,2],2)),
+    y = 165,
+    label = paste("Q. pubescens, ","n = ", counts[2,2], "mean =", round(means[2,2],2)),
     colour = my_pal_species[2]
   ) +
   annotate(
     "text",
     x = 1.5, 
-    y = 170,
-    label = paste("n = ", counts[3,2], "mean =", round(means[3,2],2)),
+    y = 165,
+    label = paste("Q. robur, ","n = ", counts[3,2], "mean =", round(means[3,2],2)),
     colour = my_pal_species[3]
   ) +
   coord_flip(xlim = c(1, NA), ylim = c(90, 180), expand = TRUE, clip = "on") +
@@ -537,7 +537,7 @@ gdd_above_5_robur_by_site_and_cohort <- df_gdd_s2 %>%
        fill = "Cohort") +
   xlim(100, 350) +
   ylim(0, 0.1) +
-  guides(alpha = "none") +
+  guides(alpha = "none", fill = guide_legend(override.aes = list(alpha = 0.5))) +
   theme_bw()
 
 
@@ -1043,6 +1043,7 @@ write.csv(sumstat_pet_gdd_germans, file = "output/tables/pet_gdd_germans.csv", r
 # 
 # 
 
+### Q. PUBESCENS ####
 ### GDD above 5 for Q. pubescens by site
 # all sites for pubescens 
 gdd_above_5_pub_by_site <- df_gdd_s2 %>% 
@@ -1288,55 +1289,6 @@ stage_2_for_analysis %>%
 
 
 
-### pubescens ###
-# 4 northern provenances of clim10, 4 southern of clim 13
-# 4 northern by altitude: B-moist 236, B-dry 315, /// E-dry 560, E-wet 630
-# 4 southern by altitude: Kurt-wet 920, Konya-wet(Ilgin) 1180, Konya-dry 1200, Isik-dry 1420
-# matched pairs Kurt-Isik // Konya-Konya
-# by latitude: Konya, Konya, Kurt, Isik, E, E, B, B
-stage_2_for_analysis %>%
-  filter(species == "Q.pubescens") %>%
-  filter(age == 3) %>%
-  group_by(site_name) %>%
-  summarise(mean_doy = mean(doy_stage_2))
-
-Konya-O 112. dry. 1200 south-med
-Konya-I 115. wet. 1180 south-med
-Eger-m. 115. wet. 630. north-low
-Bitz_d  115. dry. 315  north-low 3y 2023
-Kurt    116. wet. 920. South-med
-büchs-m 116. wet. 236. north-low 3y 2023
-eger-m  116. wet. 630. north-low 3y 2023
-eger-d  117. dry. 560. north-low 3y 2023
-Eger-d. 119. dry. 560. north-low
-Büchs-m 119. wet. 236. north-low
-Isik    120. dry. 1400 south-high
-Bitz-d. 123. dry. 315  north-low
-
-
-
-stage_2_for_analysis %>%
-  filter(species == "Q.pubescens") %>%
-  filter(age == 3) %>%
-  group_by(site_name) %>%
-  summarise(mean_gdd = mean(gdd_above_5))
-
-konya-0 169
-konya-i 182
-kurt.   189
-isik    212
-
-at age 3
-b-dry 185
-b-wet 187
-e-wet 189
-e-dry 190
-
-stage_2_for_analysis %>%
-  filter(species == "Q.pubescens") %>%
-  filter(age == 2) %>%
-  group_by(site_name) %>%
-  summarise(n = n())
 
 
 ### robur
