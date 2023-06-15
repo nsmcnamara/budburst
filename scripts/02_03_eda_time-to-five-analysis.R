@@ -1,6 +1,6 @@
 ### Exploratory Data Analysis for Time to 5 Analysis
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-14
+### Last update:  2023-06-15
 ### Simone McNamara
 
 
@@ -54,8 +54,107 @@ sum_stats <- df_gdd_2_to_5 %>%
 
 #### PLOT THE DATA ####
 #### ALL SPECIES ####
+sumstat_gdd_2to5_all <- df_gdd_2_to_5 %>%
+  summarize(n = n(),
+                   m = mean(gdd_2_to_5), 
+                   var = var(gdd_2_to_5),
+                   sd = sd(gdd_2_to_5))
+
+# histogram
+h_gdd_2to5_all <- ggplot(data = df_gdd_2_to_5, 
+                     mapping = aes(gdd_2_to_5, after_stat(density), alpha = 0.8)) +
+  geom_histogram(bins = 20, color = "black") +
+  geom_vline(xintercept = sumstat_gdd_2to5_all$m, color = "red") +
+  theme_bw() +
+  labs(title = "GDD 2 to 5, all",
+       x = "GDD 2 to 5",
+       y = "Frequency") +
+  guides(alpha = "none")
+
+# print
+h_gdd_2to5_all
+### +/- 70 gdd
+
+# save
+ggsave(filename = "h_gdd_2to5_all.png", device = png, plot = h_gdd_2to5_all, path = "output/figs")
+
+## raincloud
+# means by species
+means <- df_doy_s2 %>%
+  group_by(species) %>%
+  summarize(m = mean(doy_stage_2))
+counts <- df_doy_s2 %>%
+  group_by(species) %>%
+  summarise(n = n())
+
+# plot
+ggplot(df_gdd_2_to_5, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens", "Q.petraea"), 
+                      y = gdd_2_to_5 , 
+                      colour = species, fill = species)) +
+  ggdist::stat_halfeye(
+    breaks = 14,
+    adjust = 0.5,
+    width = 0.6,
+    justification = -.2,
+    .width = 0,
+    point_colour = NA,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  geom_boxplot(
+    width = .12,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  ggdist::stat_dots(
+    position = "dodge",
+    scale = 0.4,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  # annotate mean and n
+  annotate(
+    "text",
+    x = 3.5, 
+    y = 350,
+    label = paste("Q. petraea, ", "n = ", counts[1,2], "mean =", round(means[1,2],2)),
+    colour = my_pal_species[1]
+  ) +
+  annotate(
+    "text",
+    x = 2.5, 
+    y = 350,
+    label = paste("Q. pubescens, ","n = ", counts[2,2], "mean =", round(means[2,2],2)),
+    colour = my_pal_species[2]
+  ) +
+  annotate(
+    "text",
+    x = 1.5, 
+    y = 350,
+    label = paste("Q. robur, ","n = ", counts[3,2], "mean =", round(means[3,2],2)),
+    colour = my_pal_species[3]
+  ) +
+  coord_flip(xlim = c(1, NA), ylim = c(0, 400), expand = TRUE, clip = "on") +
+  scale_x_discrete(breaks = seq(100, 400, 50)) +
+  theme_bw() +
+  theme(legend.position = c(0.9, 0.2)) +
+  labs(x = "Species",
+       y = "GDD 2 to 5",
+       colour = "Species") +
+  scale_alpha(guide = "none") +
+  labs(fill = "Species", colour = "Species") +
+  scale_fill_manual(values = my_pal_species) +
+  scale_color_manual(values = my_pal_species) 
+
+
+
+
+
 # ALL SPECIES BY AlTITUDE
-ggplot(data = df_gdd_2_to_5_clean,
+ggplot(data = df_gdd_2_to_5,
        mapping = aes(x = altitude, y = gdd_2_to_5,
                      color = site_name)) +
   geom_point() +
@@ -64,10 +163,10 @@ ggplot(data = df_gdd_2_to_5_clean,
     se = FALSE,
     color = "blue"
   )
-# slightly longer gdd with increasing altitude, but doubt significance
+# seems pretty even
 
 # ALL SPECIES BY LATITUDE
-ggplot(data = df_gdd_2_to_5_clean,
+ggplot(data = df_gdd_2_to_5,
        mapping = aes(x = latitude, y = gdd_2_to_5,
                      color = site_name)) +
   geom_point() +
@@ -76,8 +175,7 @@ ggplot(data = df_gdd_2_to_5_clean,
     se = FALSE,
     color = "blue"
   )
-# shorter gdd with increasing latitude
-# ie the further north we go, the less warming is needed
+# seems pretty even
 
 # ALL SPECIES BY LONGITUDE
 ggplot(data = df_gdd_2_to_5_clean,
@@ -96,7 +194,7 @@ ggplot(data = df_gdd_2_to_5_clean,
 
 #### Q. PETRAEA ####
 # ALL COHORTS BY LATITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
                        color = site_name)) +
@@ -111,7 +209,7 @@ df_gdd_2_to_5_clean %>%
 # same pattern as for all species
 
 # COHORTS SPLIT BY LATITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
                        color = site_name)) +
@@ -122,14 +220,11 @@ df_gdd_2_to_5_clean %>%
     color = "blue"
   ) +
   facet_wrap(~ cohort)
-# shorter gdd with increasing latitude
-# ie the further north we go, the less warming is needed
-# same pattern as for all species
-# BUT: kizilcahamam is at 1454
-# but pattern also holds for 3yo withou kizilcahamam
+
+# contrasting patterns
 
 # ALL COHORTS BY ALTITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
                        color = site_name)) +
@@ -139,13 +234,11 @@ df_gdd_2_to_5_clean %>%
     se = FALSE,
     color = "blue"
   )
-# longer gdd with increasing altitude
-# ie the further up we go, the more warming is needed
-# same pattern as for all species
-# BUT: SEE ABOVE 
+
+# no pattern really
 
 # COHORTS SPLIT BY ALTITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.petraea") %>%
   ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
                        color = site_name)) +
@@ -156,11 +249,7 @@ df_gdd_2_to_5_clean %>%
     color = "blue"
   ) +
   facet_wrap(~ cohort)
-# shorter gdd with increasing latitude
-# ie the further north we go, the less warming is needed
-# same pattern as for all species
-# BUT: kizilcahamam is at 1454
-# but pattern also holds for 3yo withou kizilcahamam
+# contrasting patterns
 
 # this matches findings by Ducousso et al 1995
 # https://www.afs-journal.org/articles/forest/pdf/1996/02/AFS_0003-4312_1996_53_2-3_ART0053.pdf
@@ -191,7 +280,7 @@ df_gdd_2_to_5_clean %>%
 
 #### Q. ROBUR ####
 # ALL COHORTS BY LATITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.robur") %>%
   filter(site_name != "Bosco_Pantano") %>%
   ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
@@ -202,12 +291,10 @@ df_gdd_2_to_5_clean %>%
     se = FALSE,
     color = "blue"
   )
-# less gdd with increasing latitude
-# ie the further north we go, the less warming is needed to complete budburst
-# same pattern as for all species
+# further north more warming required
 
 # COHORTS SPLIT BY LATITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.robur") %>%
   filter(site_name != "Bosco_Pantano") %>%  
   ggplot(mapping = aes(x = latitude, y = gdd_2_to_5,
@@ -221,12 +308,11 @@ df_gdd_2_to_5_clean %>%
   facet_wrap(~ cohort)
 # shorter gdd with increasing latitude
 # ie the further north we go, the less warming is needed
-# same pattern as for all species
-# BUT: kizilcahamam is at 1454
-# but pattern also holds for 3yo withou kizilcahamam
+# opposite pattern.. so other pattern is created by differences in cohorts
+
 
 # ALL COHORTS BY ALTITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.robur") %>%
   filter(site_name != "Bosco_Pantano") %>%  
   ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
@@ -243,7 +329,7 @@ df_gdd_2_to_5_clean %>%
 # BUT: SEE ABOVE 
 
 # COHORTS SPLIT BY ALTITUDE
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.robur") %>%
   filter(site_name != "Bosco_Pantano") %>%  
   ggplot(mapping = aes(x = altitude, y = gdd_2_to_5,
@@ -255,12 +341,12 @@ df_gdd_2_to_5_clean %>%
     color = "blue"
   ) +
   facet_wrap(~ cohort)
-
+# now opposite pattern, so something weird
 
 
 
 #### GDD 2 to 5 Q. petraea ###
-df_gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   filter(species == "Q.petraea") %>%
   filter(age == "2") %>%
   ggplot(aes(x = reorder(site_name, altitude), 
@@ -303,7 +389,7 @@ df_gdd_2_to_5_clean %>%
   scale_color_brewer(palette = "Dark2")
 
 
-gdd_2_to_5_clean %>%
+df_gdd_2_to_5 %>%
   select(gdd_2_to_5, species, altitude, latitude, longitude, cohort, site_wet) %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
 ## altitude, latitude, longitude, correlated but also to gdd_2_to_5
@@ -311,7 +397,7 @@ gdd_2_to_5_clean %>%
 
 
 #### Q. robur only ####
-df_robur_only <- df_gdd_2_to_5_clean %>%
+df_robur_only <- df_gdd_2_to_5 %>%
   filter(species == "Q.robur")
 
 robur_means <- aggregate(gdd_2_to_5 ~ site_name + altitude + longitude + latitude + site_wet, df_robur_only, mean)
