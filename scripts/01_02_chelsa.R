@@ -4,6 +4,11 @@ library(sf)
 
 library(raster)
 
+# info about chelsa climate variables
+# https://chelsa-climate.org/bioclim/
+# get the download link with website https://envicloud.wsl.ch/#/?bucket=https%3A%2F%2Fos.zhdk.cloud.switch.ch%2Fenvicloud%2F&prefix=chelsa%2Fchelsa_V2%2FGLOBAL%2Fclimatologies%2F1981-2010%2F
+# download in terminal with "wget LINK"
+# make sure you are downloading the correct month or "mean"
 
 coordinates.testing <- read.csv("~/budburst/data/processed/mother-info.csv") ## your coordinate file (ID Long Lat )
 coordinates <- coordinates.testing %>%
