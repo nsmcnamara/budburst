@@ -1,6 +1,6 @@
 ### Model for budburst
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-08
+### Last update:  2023-06-15
 ### Simone McNamara
 
 
