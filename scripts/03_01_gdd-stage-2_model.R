@@ -196,6 +196,8 @@ m_gdd_rob_many <- df_s2 %>%
 
 
 summary(m_gdd_rob_many)
+aov <- anova(m_gdd_rob_many, type = "3")
+write.csv(aov, file = "output/tables/aov_rob_many.csv", row.names = TRUE)
 
 
 ### check model assumptions
@@ -222,7 +224,6 @@ emm <- emmeans(m_gdd_rob_many, ~ latitude + altitude + temp_ann_mean + precip_an
 summary(emm)
 
 # not sure how to interpret
-
 
 
 
