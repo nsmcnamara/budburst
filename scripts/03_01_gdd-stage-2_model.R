@@ -191,7 +191,7 @@ summary(m_gdd_s2_rob_aust_alt_wet)
 m_gdd_rob_many <- df_s2 %>%
   filter(species == "Q.robur") %>%
   filter(site_name != "Bosco_Pantano") %>%
-  lmer(gdd_above_5 ~ latitude + altitude + temp_ann_mean + precip_ann + gsl + 
+  lmer(gdd_above_5 ~ latitude + altitude + temp_ann_mean + precip_ann +  
          (1 | mother_id) + (1 | age) + (1 | year), data = .)
 
 
@@ -216,6 +216,16 @@ plot(m_gdd_rob_many,
 ## leverage plot
 plot(m_gdd_rob_many, rstudent(.) ~ hatvalues(.))
 performance::check_model(m_gdd_rob_many)
+
+# some kind of tukey test
+emm <- emmeans(m_gdd_rob_many, ~ latitude + altitude + temp_ann_mean + precip_ann)
+summary(emm)
+
+# not sure how to interpret
+
+
+
+
 
 
 
