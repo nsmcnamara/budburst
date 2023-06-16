@@ -35,21 +35,86 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
   # mother_id 
 
 
-# LMM Robur #
-# latitude only
-m_gdd_s2_rob <- lmer(gdd_above_5 ~ latitude + (1 | mother_id), 
-                     data = stage_2_for_analysis, subset = species == "Q.robur")
+#### LMM Robur ####
+### latitude only
+m_gdd_s2_rob_lat <- stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  lmer(gdd_above_5 ~ latitude + (1 | mother_id), data = .)
 
 # summary / anova
-summary(m_gdd_s2_rob)
-anova(m_gdd_s2_rob, type = "3")
+summary(m_gdd_s2_rob_lat)
 # latitude not significant
 # but mother_id explains a fair bit, but a fair bit of variance unexplained
 
+# w/o Bosco
+m_gdd_s2_rob_lat_bosco <- stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ latitude + (1 | mother_id), data = .)
+
+summary(m_gdd_s2_rob_lat_bosco)
+# now latitude v. significant
+# mother_id effect less 
+
+### altitude
+m_gdd_s2_rob_alt <- stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  lmer(gdd_above_5 ~ latitude + (1 | mother_id), data = .)
+
+# summary / anova
+summary(m_gdd_s2_rob_alt)
+# altitude not significant
+# but mother_id explains a fair bit, but a fair bit of variance unexplained
+
+# w/o Bosco
+m_gdd_s2_rob_alt_bosco <- stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ altitude + (1 | mother_id), data = .)
+
+summary(m_gdd_s2_rob_alt_bosco)
+# now altitude a little significant
+
+
+### latitude and altitude
+### latitude only
+m_gdd_s2_rob_lat_alt <- stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  lmer(gdd_above_5 ~ latitude + altitude + (1 | mother_id), data = .)
+
+# summary / anova
+summary(m_gdd_s2_rob_lat_alt)
+# neither significant
+
+# w/o Bosco
+m_gdd_s2_rob_lat_alt_bosco <- stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ latitude + altitude + (1 | mother_id), data = .)
+
+summary(m_gdd_s2_rob_lat_alt_bosco)
+# now latitude significant, altitude not
+
+### w interaction between latitude and altitude
+m_gdd_s2_rob_lat_alt_bosco <- stage_2_for_analysis %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  mutate(latitude_scaled = scale(latitude),
+         altitude_scaled = scale(altitude)) %>%
+  lmer(gdd_above_5 ~ latitude_scaled * altitude_scaled + (1 | mother_id), data = .)
+
+summary(m_gdd_s2_rob_lat_alt_bosco)
+# latitude significant
 
 
 
 
+
+
+
+
+
+### ### ### ### ### ### ###
 
 ### check model assumptions
 ### Tukey Anscombe
