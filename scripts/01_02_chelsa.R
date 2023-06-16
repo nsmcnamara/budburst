@@ -10,7 +10,8 @@ library(raster)
 # download in terminal with "wget LINK"
 # make sure you are downloading the correct month or "mean"
 
-coordinates.testing <- read.csv("~/budburst/data/processed/mother-info.csv") ## your coordinate file (ID Long Lat )
+## your coordinate file (ID Long Lat )
+coordinates.testing <- read.csv("~/budburst/data/processed/mother-info.csv") 
 coordinates <- coordinates.testing %>%
   dplyr::select(mother_id, longitude, latitude) %>%
   rename(Long = longitude) %>%
@@ -36,13 +37,15 @@ rasStack = stack("~/budburst/data/raw/CHELSA_bio1_1981-2010_V.2.1.tif",
 
 pointCoordinates=coordinates
 
-coordinates(pointCoordinates)= ~ Long + Lat ## match with column headers
+## match with column headers
+coordinates(pointCoordinates)= ~ Long + Lat 
 
 rasValue=extract(rasStack, pointCoordinates)
 
 combinePointValue=cbind(pointCoordinates,rasValue)
 
-write.table(combinePointValue,file="~/budburst/data/processed/coordinates_chelsa_values.csv", append=FALSE, sep= ",", row.names = FALSE, col.names=TRUE) ## table
+## table
+write.table(combinePointValue,file="~/budburst/data/processed/coordinates_chelsa_values.csv", append=FALSE, sep= ",", row.names = FALSE, col.names=TRUE)
 
 
 ### debbie's original code
