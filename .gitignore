@@ -5,3 +5,5 @@
 .DS_Store
 data/
 output/
+02_99_penguins.R
+99_palettes.R
