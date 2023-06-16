@@ -262,6 +262,7 @@ sumstat_gdd_s2_all <- df_gdd_s2 %>%
             sd = sd(gdd_above_5))
 
 
+
 # histogram
 gdd_s2_all <- ggplot(data = df_gdd_s2, 
                           mapping = aes(gdd_above_5, after_stat(density), alpha = 0.8)) +
@@ -280,7 +281,76 @@ gdd_s2_all
 ggsave(filename = "gdd_s2_all.png", device = png, plot = gdd_s2_all, path = "output/figs")
 ### +/- 226 gdd for stage 2
 
+## raincloud
+# means by species
+means <- df_gdd_s2 %>%
+  group_by(species) %>%
+  summarize(m = mean(gdd_above_5))
+counts <- df_gdd_s2 %>%
+  group_by(species) %>%
+  summarise(n = n())
 
+# plot
+ggplot(df_gdd_s2, aes(x = forcats::fct_relevel(species, "Q.robur", "Q.pubescens", "Q.petraea"), 
+                      y = gdd_above_5, 
+                      colour = species, fill = species)) +
+  ggdist::stat_halfeye(
+    breaks = 14,
+    adjust = 0.5,
+    width = 0.6,
+    justification = -.2,
+    .width = 0,
+    point_colour = NA,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  geom_boxplot(
+    width = .12,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  ggdist::stat_dots(
+    position = "dodge",
+    scale = 0.4,
+    side = "left",
+    dotsize = 1,
+    justification = 1.2,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  # annotate mean and n
+  annotate(
+    "text",
+    x = 3.5, 
+    y = 350,
+    label = paste("Q. petraea, ", "n = ", counts[1,2], "mean =", round(means[1,2],2)),
+    colour = my_pal_species[1]
+  ) +
+  annotate(
+    "text",
+    x = 2.5, 
+    y = 350,
+    label = paste("Q. pubescens, ","n = ", counts[2,2], "mean =", round(means[2,2],2)),
+    colour = my_pal_species[2]
+  ) +
+  annotate(
+    "text",
+    x = 1.5, 
+    y = 350,
+    label = paste("Q. robur, ","n = ", counts[3,2], "mean =", round(means[3,2],2)),
+    colour = my_pal_species[3]
+  ) +
+  coord_flip(xlim = c(1, NA), ylim = c(100, 400), expand = TRUE, clip = "on") +
+  scale_x_discrete(breaks = seq(100, 400, 50)) +
+  theme_bw() +
+  theme(legend.position = c(0.9, 0.2)) +
+  labs(x = "Species",
+       y = "GDD Stage 2",
+       colour = "Species") +
+  scale_alpha(guide = "none") +
+  labs(fill = "Species", colour = "Species") +
+  scale_fill_manual(values = my_pal_species) +
+  scale_color_manual(values = my_pal_species) 
   
   
 ## GDD by Species ##
