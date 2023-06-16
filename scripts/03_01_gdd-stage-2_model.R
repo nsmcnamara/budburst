@@ -14,6 +14,7 @@ library(emmeans)
 
 #### Data Import ####
 stage_2_for_analysis <- read.csv("~/budburst/data/processed/stage_2_for_analysis.csv", stringsAsFactors=TRUE)
+chelsa <- read.csv("~/budburst/data/processed/coordinates_chelsa_values.csv", stringsAsFactors = TRUE)
 
 glimpse(stage_2_for_analysis)
 head(stage_2_for_analysis)
@@ -23,6 +24,15 @@ str(stage_2_for_analysis)
 ### check NAs
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
+## add chelsa to DF
+chelsa <- chelsa %>%
+  dplyr::select(- c(Long, Lat, optional))
+
+# rename
+colnames(chelsa) <- gsub("CHELSA_|_1981.2010_V.2.1", "", colnames(chelsa))
+
+
+df_s2 <- left_join(stage_2_for_analysis, chelsa, by = "mother_id")
 
 #### LMM Stage 2 ####
 # resp ~ FEexpr + (REexpr1 | factor1) + (REexpr2 | factor2) + ...
@@ -34,8 +44,19 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 # random effects:
   # mother_id 
 
+# resp ~ FEexpr + (1 | factor 1)
+# global intercept. deviation from intercept for factor 1. global slope for FE
+
+# resp ~ FEexpr + (1 | factor 1) + (0 + FEexpr | factor 1)
+# as above, plus effect of FEexpr within each level of factor 1, 
+# while enforcing a zero correlation between the intercept deviations and effect deviations across levels of V2. 
+
+# resp ~ FEexpr + (1 + FEexpr | factor 1)
+# allowing correlation between intercept and effect deviation
+
 
 #### LMM Robur ####
+
 ### latitude only
 m_gdd_s2_rob_lat <- stage_2_for_analysis %>%
   filter(species == "Q.robur") %>%
@@ -106,8 +127,21 @@ m_gdd_s2_rob_lat_alt_bosco <- stage_2_for_analysis %>%
 summary(m_gdd_s2_rob_lat_alt_bosco)
 # latitude significant
 
+## LMM robur lat + climate_zone
+m_gdd_s2_rob_lat_clim_bosco <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ latitude + climate_zone + altitude + site_wet + (1 | mother_id) + (1 | age) + (1 | year), data =.)
 
+summary(m_gdd_s2_rob_lat_clim_bosco)
 
+## LMM robur lat + climate_zone
+m_gdd_s2_rob_aust_alt_wet <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(country == "Austria") %>%
+  lmer(gdd_above_5 ~ altitude + site_wet + (1 | mother_id) + (1 | age) + (1 | year), data =.)
+
+summary(m_gdd_s2_rob_aust_alt_wet)
 
 
 
