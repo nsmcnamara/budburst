@@ -470,6 +470,18 @@ ggplot(data = df_gdd_s2 %>%
 # slightly longer gdd with increasing altitude, but doubt significance
 
 # ALL SPECIES BY LATITUDE
+# DOY
+ggplot(data = df_doy_s2,
+       mapping = aes(x = latitude, y = doy_stage_2,
+                     color = site_name)) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue"
+  )
+
+# GDD
 ggplot(data = df_gdd_s2,
        mapping = aes(x = latitude, y = gdd_above_5,
                      color = site_name)) +
@@ -605,8 +617,32 @@ robur_gdd_lat_no_bosco
 ggsave(filename = "robur_gdd-lat_no-bosco.png", device = png, plot = robur_gdd_lat_no_bosco, path = "output/figs")
 
 # clear pattern
-# now pattern matches with TIME TO 5 Q. petraea
-# the further north, the less warming is required
+
+## DOY by LAT
+robur_doy_lat <- df_doy_s2 %>%
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = latitude, y = doy_stage_2,
+                       color = reorder(site_name, latitude), size = 0.5, alpha = 0.7)) +
+  geom_point(position = position_jitter(width = 0.1)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "blue", size = 1
+  ) +
+  theme_bw() +
+  labs(title = "DOY S2 for Q.robur",
+       x = "Latitude",
+       y = "DOY",
+       colour = "Collection Site") +
+  scale_alpha(guide = "none") +
+  scale_color_manual(values = my_pal) +
+  guides(size = "none", color = guide_legend(override.aes = list(size = 5, alpha = 0.7)))
+
+# print
+robur_doy_lat
+
+# save
+ggsave(filename = "robur_doy-lat.png", device = png, plot = robur_doy_lat, path = "output/figs")
 
 
 
@@ -1284,9 +1320,6 @@ qqline(stage_2_for_analysis$cum_temp_above_5)
 stage_2_for_analysis %>%
   select(cum_temp_above_5, species, altitude, latitude, longitude, age) %>%
   ggpairs(mapping = aes(color = species, alpha = 0.5))
-
-
-
 
 
 

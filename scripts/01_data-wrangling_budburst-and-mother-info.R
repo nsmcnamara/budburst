@@ -82,8 +82,8 @@ budburst_zh22 %>%
 budburst_zh22_clean %>%
   summarise(n_distinct(acorn_id))
 ### total acorns planted: 366
-### total acorns measured: 356
-### total acorns dropped: 10
+### total acorns measured: 355
+### total acorns dropped: 11
 
 
 
@@ -186,9 +186,9 @@ budburst_zh_all <- bind_rows(budburst_zh22_transformed, budburst_zh23_transforme
   mutate(UID = paste0(acorn_id, "_", year))
 nrow(distinct(budburst_zh22_transformed, acorn_id))
 nrow(distinct(budburst_zh23_transformed, acorn_id))
-### 356 + 780 = 1136
+### 355 + 780 = 1135
 nrow(distinct(budburst_zh_all, UID))
-### 1136
+### 1135
 
 ## make a new DF: Date of First Stage 2
 ## if not measured, make linear interpolation between the two neighbouring measurements
@@ -207,9 +207,9 @@ direct_first_stage_2 <- budburst_zh_all %>%
 stage_2_missed <- budburst_zh_all %>%
   filter(!UID %in% direct_first_stage_2$UID)
 nrow(distinct(stage_2_missed, UID))
-### 348
+### 347
 nrow(distinct(budburst_zh_all, UID))
-### sanity check: 348 + 788 = 1136, ie all measurements accounted for
+### sanity check: 348 + 788 = 1135, ie all measurements accounted for
 
 # find first observation after stage 2 was reached
 stage_2_post <- stage_2_missed %>%
@@ -219,7 +219,7 @@ stage_2_post <- stage_2_missed %>%
   rename(budburst_score_post_2 = budburst_score) %>%
   rename(day_of_year_post_2 = day_of_year) %>%
   select(UID, acorn_id, day_of_year_post_2, budburst_score_post_2)
-### 348 observations
+### 346 observations
 
 # select last observation for each acorn.id before stage 2
 stage_2_pre <- stage_2_missed %>%
@@ -228,7 +228,7 @@ stage_2_pre <- stage_2_missed %>%
   slice_max(day_of_year) %>%
   rename(budburst_score_pre_2 = budburst_score) %>%
   rename(day_of_year_pre_2 = day_of_year)
-### 348 observations
+### 347 observations
 
 # combine dfs
 by_s2 <- join_by(UID, acorn_id == acorn_id)
@@ -253,22 +253,24 @@ stage_2_interpolated <- stage_2_missed_combined %>%
 ###
 # combine calculated and interpolated stage 2 df
 stage_2_all <- rbind(direct_first_stage_2, stage_2_interpolated)
-### 1136 in total
+### 1135 in total
 ### sanity check: same as unique in budburst_zh_all
 
 # clean up df
 stage_2 <- stage_2_all %>%
   select(UID, acorn_id, mother_id, doy_stage_2, cohort, age, year)
 # checking NAs
-which(is.na(stage_2))
+which(is.na(stage_2)) # there was one where there was not post (only 346)
+stage_2 <- stage_2 %>%
+  drop_na()
 
 # combine stage 2 and mother info
 stage_2_combined_mother <- left_join(stage_2, mother_info, by = "mother_id")
-### 1136 observations
+### 1135 observations
 # for 24 acorns, no mother info found (these arrived late and must be excluded from analysis)
 stage_2_combined_mother <- stage_2_combined_mother %>%
   drop_na(species)
-### total: 1112 acorns for analysis
+### total: 1110 acorns for analysis
 
 #### replace until here ####
 # 

@@ -1,6 +1,6 @@
 ### Model for budburst
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-01
+### Last update:  2023-06-08
 ### Simone McNamara
 
 
@@ -57,9 +57,12 @@ emmeans(model_growing_degree_days)
 # split lmer by species
 # try with latitude and altitude 
 
+q_robur <- stage_2_for_analysis %>%
+  filter(species == "Q.robur")
 plot(q_robur$latitude,q_robur$altitude
      )
 # correlated
 # maybe just start with one or do a PCA of lat and alt
 # some kind of site moisture index
 # avg yearly precip from debbie 
+
