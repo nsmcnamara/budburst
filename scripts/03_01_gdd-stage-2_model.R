@@ -1,6 +1,6 @@
 ### Model for budburst
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-15
+### Last update:  2023-06-16
 ### Simone McNamara
 
 
@@ -24,12 +24,32 @@ str(stage_2_for_analysis)
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
 
-#### LMM ####
+#### LMM Stage 2 ####
+# resp ~ FEexpr + (REexpr1 | factor1) + (REexpr2 | factor2) + ...
+# resp = gdd_above_5
+# fixed effects: 
+  # photoperiod (latitude)
+  # temperature at provenance 
+  # precipitation at provenance
+# random effects:
+  # mother_id 
 
-model_growing_degree_days <- lmer(cum_temp_above_5 ~ species  + age + (1|mother_id), data = stage_2_for_analysis)
 
-summary(model_growing_degree_days)
-anova(model_growing_degree_days, type = "3")
+# LMM Robur #
+# latitude only
+m_gdd_s2_rob <- lmer(gdd_above_5 ~ latitude + (1 | mother_id), 
+                     data = stage_2_for_analysis, subset = species == "Q.robur")
+
+# summary / anova
+summary(m_gdd_s2_rob)
+anova(m_gdd_s2_rob, type = "3")
+# latitude not significant
+# but mother_id explains a fair bit, but a fair bit of variance unexplained
+
+
+
+
+
 
 ### check model assumptions
 ### Tukey Anscombe
