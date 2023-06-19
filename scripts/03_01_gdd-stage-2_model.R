@@ -1,6 +1,6 @@
 ### Model for budburst
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-16
+### Last update:  2023-06-19
 ### Simone McNamara
 
 
@@ -224,6 +224,29 @@ emm <- emmeans(m_gdd_rob_many, ~ latitude + altitude + temp_ann_mean + precip_an
 summary(emm)
 
 # not sure how to interpret
+
+
+### Q petraea ###
+m_gdd_pet_many <- df_s2 %>%
+  filter(species == "Q.petraea") %>%
+  filter(country != "Turkey") %>%
+  lmer(gdd_above_5 ~ precip_ann + 
+         (1 | mother_id) + (1 | age) + (1 | year), data = .)
+# problem: precip_ann is same for staufen dry/wet and for schriesheim dry/wet
+
+### Q pubescens ###
+m_gdd_pub_many <- df_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  drop_na() %>%
+  lmer(gdd_above_5_log ~ latitude +
+         (1 | mother_id) + (1 | age) + (1 | year), data = .)
+pub <- df_s2 %>%
+  filter(species == "Q.pubescens") %>%
+  drop_na()
+
+summary(m_gdd_pub_many)
+
+performance::check_model(m_gdd_pub_many, check = "qq", show)
 
 
 
