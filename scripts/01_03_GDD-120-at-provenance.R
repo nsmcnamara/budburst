@@ -17,30 +17,21 @@ library(sf)
 library(raster)
 
 
-#### 
-## your coordinate file (ID Long Lat )
-coordinates.testing <- read.csv("~/budburst/data/processed/mother-info.csv") 
-coordinates <- coordinates.testing %>%
+#### Data Import ####
+# get coordinates of provenance sites (id, long, lat)
+df_mother_info <- read.csv("~/budburst/data/processed/mother-info.csv") 
+
+summary(df_mother_info)
+sapply(df_mother_info, function(x) sum(is.na(x)))
+
+coordinates <- df_mother_info %>%
   dplyr::select(mother_id, longitude, latitude) %>%
   rename(Long = longitude) %>%
   rename(Lat = latitude)
 
+
 ## whatever file to add more files you'd seperate the file names with a comma
-rasStack = stack("~/budburst/data/raw/CHELSA_bio1_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_bio12_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_bio15_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_fcf_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gdd5_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gdd10_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gddlgd10_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gdgfgd5_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gdgfgd10_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gsl_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gsp_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_gst_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_kg2_1981-2010_V.2.1.tif",
-                 "~/budburst/data/raw/CHELSA_ngd5_1981-2010_V.2.1.tif"
-) 
+rasStack = stack("~/budburst/data/raw/CHELSA_tas_01_1980_V.2.1.tif") 
 
 
 pointCoordinates=coordinates
