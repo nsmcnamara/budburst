@@ -3,11 +3,13 @@
 ### Last update:  2023-06-21
 ### Simone McNamara
 
-
+#### Setup ####
+# libraries
 library(tidyverse)
 library(sf)
-
 library(raster)
+
+
 
 # info about chelsa climate variables
 # https://chelsa-climate.org/bioclim/
