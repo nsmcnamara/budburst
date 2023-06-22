@@ -1,6 +1,6 @@
 ### GDD-5 in Spring at Provenance Sites
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-21
+### Last update:  2023-06-22
 ### Simone McNamara
 
 #### Info ####
@@ -14,7 +14,7 @@
 # libraries
 library(tidyverse)
 library(sf)
-library(raster)
+library(ncdf4)
 
 
 #### Data Import ####
@@ -24,25 +24,23 @@ df_mother_info <- read.csv("~/budburst/data/processed/mother-info.csv")
 summary(df_mother_info)
 sapply(df_mother_info, function(x) sum(is.na(x)))
 
-coordinates <- df_mother_info %>%
-  dplyr::select(mother_id, longitude, latitude) %>%
-  rename(Long = longitude) %>%
-  rename(Lat = latitude)
+# get unique coordinates
+unique_coordinates <- df_mother_info %>%
+  distinct(longitude, latitude, .keep_all = FALSE)
 
+# get bioclim data
+# 152 files following the pattern /Users/simonemcnamara/budburst/data/ISIMIP3a/CHELSA-W5E5v1.0/chelsa-w5e5v1.0_obsclim_tas_1800arcsec_global_daily_201003.nc
+# the 152 files cover the years 1979 - 2016, and for each year the months January until April
+# each file has daily mean temperatures for each day of the month
+# the temperatures are recorded in Kelvin
 
-## whatever file to add more files you'd seperate the file names with a comma
-rasStack = stack("~/budburst/data/raw/CHELSA_tas_01_1980_V.2.1.tif") 
+files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
 
+stack <- stack(files) 
 
-pointCoordinates=coordinates
+# create a df that has an entry with growing degree days from january until april for each year in the dataset (1979 - 2016)
+# where growing degree days is the cumulative temperature above 5°C, and temperatures below that are discarded and not considered when calculating the growing degree days
 
-## match with column headers
-coordinates(pointCoordinates)= ~ Long + Lat 
-
-rasValue=extract(rasStack, pointCoordinates)
-
-combinePointValue=cbind(pointCoordinates,rasValue)
-
-## table
-write.table(combinePointValue,file="~/budburst/data/processed/tas.csv", append=FALSE, sep= ",", row.names = FALSE, col.names=TRUE)
+# Set the base temperature in Kelvin
+Tbase <- 278.15
 
