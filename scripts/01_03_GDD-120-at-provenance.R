@@ -14,7 +14,7 @@
 # libraries
 library(tidyverse)
 library(sf)
-library(ncdf4)
+library(raster)
 
 
 #### Data Import ####
@@ -28,19 +28,49 @@ sapply(df_mother_info, function(x) sum(is.na(x)))
 unique_coordinates <- df_mother_info %>%
   distinct(longitude, latitude, .keep_all = FALSE)
 
+# Kelvin to °C
+kelvin <- 273.15
+
+# base temperature
+tbase <- 5
+
 # get bioclim data
 # 152 files following the pattern /Users/simonemcnamara/budburst/data/ISIMIP3a/CHELSA-W5E5v1.0/chelsa-w5e5v1.0_obsclim_tas_1800arcsec_global_daily_201003.nc
 # the 152 files cover the years 1979 - 2016, and for each year the months January until April
 # each file has daily mean temperatures for each day of the month
 # the temperatures are recorded in Kelvin
 
+# do it for one file
 files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
+stack <- stack(files[149]) 
 
-stack <- stack(files) 
+# extract values for coordinates
+temp_month <- extract(stack, unique_coordinates)
+
+# convert to °C
+temp_month_celsius <- temp_month - kelvin
+
+# set to 0 if below 5
+temp_month_base <- ifelse(temp_month_celsius < tbase, 0, temp_month_celsius)
+
+# cumulate for month
+temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
 
 # create a df that has an entry with growing degree days from january until april for each year in the dataset (1979 - 2016)
 # where growing degree days is the cumulative temperature above 5°C, and temperatures below that are discarded and not considered when calculating the growing degree days
 
-# Set the base temperature in Kelvin
-Tbase <- 278.15
+
+
+
+
+combinePointValue=cbind(pointCoordinates,rasValue)
+
+
+
+
+### later
+files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
+
+
+
 
