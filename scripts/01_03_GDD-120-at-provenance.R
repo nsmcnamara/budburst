@@ -41,17 +41,17 @@ tbase <- 5
 # the temperatures are recorded in Kelvin
 
 # do it for one file
-files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
-stack <- stack(files[147]) 
+#files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
+#stack <- stack(files[147]) 
 
 # extract values for coordinates
-temp_month <- extract(stack, unique_coordinates[2:3])
+#temp_month <- extract(stack, unique_coordinates[2:3])
 
 # convert to °C
-temp_month_celsius <- temp_month - kelvin
+#temp_month_celsius <- temp_month - kelvin
 
 # set to 0 if below 5
-temp_month_base <- ifelse(temp_month_celsius < tbase, 0, temp_month_celsius)
+#temp_month_base <- ifelse(temp_month_celsius < tbase, 0, temp_month_celsius)
 
 # cumulate for month
 #temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
@@ -131,6 +131,52 @@ for (year in start_year:end_year) {
   
   # Loop through the months
   for (month in 1:4) {
+    # Construct the file path
+    file_path <- sprintf(file_pattern, year, month)
+    
+    # Read the temperature data from the file
+    stack <- stack(file.path(base_dir, file_path))
+    
+    # Extract values for coordinates
+    temp_month <- extract(stack, unique_coordinates[2:3])
+    
+    # Convert to °C
+    temp_month_celsius <- temp_month - kelvin
+    
+    # Set to 0 if below 5, otherwise subtract 5 to get gdd_5
+    temp_month_base <- ifelse(temp_month_celsius < tbase, 0, temp_month_celsius - tbase)
+    
+    # Calculate the cumulative sum for each month
+    temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
+    
+    last_column <- temp_month_base_cum[, ncol(temp_month_base_cum)]
+    
+    # Accumulate the values for each month
+    total_values <- total_values + last_column
+  }
+  
+  # Create a column name using the year
+  column_name <- as.character(year)
+  
+  # Add the accumulated sum values as a new column in the data frame
+  cumulative_temps_df[[column_name]] <- total_values
+}
+
+
+
+
+
+
+# Create an empty data frame
+cumulative_temps_jan_mar_df <- data.frame(unique_coordinates)
+
+# Loop through the years
+for (year in start_year:end_year) {
+  # Initialize a vector to store the cumulative sum values
+  total_values <- numeric(nrow(unique_coordinates))
+  
+  # Loop through the months january till march
+  for (month in 1:3) {
     # Construct the file path
     file_path <- sprintf(file_pattern, year, month)
     
