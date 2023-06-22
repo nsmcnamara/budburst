@@ -26,7 +26,7 @@ sapply(df_mother_info, function(x) sum(is.na(x)))
 
 # get unique coordinates
 unique_coordinates <- df_mother_info %>%
-  distinct(longitude, latitude, .keep_all = FALSE)
+  distinct(site_name, longitude, latitude, .keep_all = FALSE)
 
 # Kelvin to °C
 kelvin <- 273.15
@@ -42,10 +42,10 @@ tbase <- 5
 
 # do it for one file
 files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
-stack <- stack(files[149]) 
+stack <- stack(files[147]) 
 
 # extract values for coordinates
-temp_month <- extract(stack, unique_coordinates)
+temp_month <- extract(stack, unique_coordinates[2:3])
 
 # convert to °C
 temp_month_celsius <- temp_month - kelvin
@@ -54,7 +54,7 @@ temp_month_celsius <- temp_month - kelvin
 temp_month_base <- ifelse(temp_month_celsius < tbase, 0, temp_month_celsius)
 
 # cumulate for month
-temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
+#temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
 
 
 # do it for one year
@@ -65,21 +65,28 @@ file_pattern <- "chelsa-w5e5v1.0_obsclim_tas_1800arcsec_global_daily_2016%02d.nc
 
 # Define the start and end indices based on file endings
 start_index <- 1  # Assuming the first file ends with "01"
-end_index <- 1    # Assuming the last file ends with "04"
+end_index <- 4    # Assuming the last file ends with "04"
 
 # Create an empty data frame
-cumulative_temps_df <- data.frame()
+cumulative_temps_df <- data.frame(unique_coordinates)
+
+# Initialize a vector to store the cumulative sum values
+total_values <- numeric(nrow(unique_coordinates))
+
 
 # Loop through the files
 for (i in start_index:end_index) {
   # Construct the file path
   file_path <- list.files(path = base_dir, pattern = sprintf(file_pattern, i), full.names = TRUE)
   
+  # Extract the year from the file name
+  year <- substr(file_path, nchar(file_path) - 8, nchar(file_path) - 5)
+  
   # Read the temperature data from the file
   stack <- stack(file_path)
   
   # Extract values for coordinates
-  temp_month <- extract(stack, unique_coordinates)
+  temp_month <- extract(stack, unique_coordinates[2:3])
   
   # Convert to °C
   temp_month_celsius <- temp_month - kelvin
@@ -90,14 +97,14 @@ for (i in start_index:end_index) {
   # Calculate the cumulative sum for each month
   temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
   
-  print(temp_month_base_cum[length(temp_month_base_cum)])
-  # Add the cumulative sum values as a new column in the data frame
-  # cumulative_temps_df <- cbind(cumulative_temps_df, temp_month_base_cum)
+  last_column <- temp_month_base_cum[, ncol(temp_month_base_cum)]
+  
+  # Accumulate the values for each month
+  total_values <- total_values + temp_month_base_cum[, ncol(temp_month_base_cum)]
 }
 
-# Rename the columns of the data frame
-colnames(cumulative_temps_df) <- c("Month 1", "Month 2", "Month 3", "Month 4")
-
+# Create a data frame with the "Total" column
+cumulative_temps_df[[year]] <- total_values
 
 
 
@@ -106,16 +113,53 @@ colnames(cumulative_temps_df) <- c("Month 1", "Month 2", "Month 3", "Month 4")
 
 
 
+# Define the base directory and file pattern
+base_dir <- "data/ISIMIP3a/CHELSA-W5E5v1.0/"
+file_pattern <- "chelsa-w5e5v1.0_obsclim_tas_1800arcsec_global_daily_%s%02d.nc"
 
+# Define the start and end years
+start_year <- 1979
+end_year <- 2016
 
-combinePointValue=cbind(pointCoordinates,rasValue)
+# Create an empty data frame
+cumulative_temps_df <- data.frame(unique_coordinates)
 
-
-
-
-### later
-files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
-
-
+# Loop through the years
+for (year in start_year:end_year) {
+  # Initialize a vector to store the cumulative sum values
+  total_values <- numeric(nrow(unique_coordinates))
+  
+  # Loop through the months
+  for (month in 1:4) {
+    # Construct the file path
+    file_path <- sprintf(file_pattern, year, month)
+    
+    # Read the temperature data from the file
+    stack <- stack(file.path(base_dir, file_path))
+    
+    # Extract values for coordinates
+    temp_month <- extract(stack, unique_coordinates[2:3])
+    
+    # Convert to °C
+    temp_month_celsius <- temp_month - kelvin
+    
+    # Set to 0 if below 5, otherwise subtract 5 to get gdd_5
+    temp_month_base <- ifelse(temp_month_celsius < tbase, 0, temp_month_celsius - tbase)
+    
+    # Calculate the cumulative sum for each month
+    temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
+    
+    last_column <- temp_month_base_cum[, ncol(temp_month_base_cum)]
+    
+    # Accumulate the values for each month
+    total_values <- total_values + last_column
+  }
+  
+  # Create a column name using the year
+  column_name <- as.character(year)
+  
+  # Add the accumulated sum values as a new column in the data frame
+  cumulative_temps_df[[column_name]] <- total_values
+}
 
 
