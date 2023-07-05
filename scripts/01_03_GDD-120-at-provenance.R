@@ -5,8 +5,8 @@
 
 
 #### Setup ####
-
-
+library(tidyverse)
+library(conflicted)
 
 
 #### Data Import ####
@@ -15,14 +15,23 @@ chelsa_extracted_1999.12.31_121 <- read.table("~/chelsa_extracted_1999-12-31_121
 
 
 #### Data Wrangling ####
+# make vector with column names
 col_names <- c("id", "tas", "tasmax", "tasmin", "pr", "rsds", "day", "month", "year", "lat", "lon", "site_name")
+# apply column dames to data frame
+colnames(chelsa_extracted_1999.12.31_121) <- col_names
 
-
+# tas is in kelvin *10, so to get gdd above 5°C need to transform
+# variables
 # Kelvin to °C
 kelvin <- 273.15
-
 # base temperature
 tbase <- 5
+
+chelsa_extracted_1999.12.31_121 <- chelsa_extracted_1999.12.31_121 %>%
+  mutate(tas_C = (tas/10) - kelvin) %>%
+  mutate(gdd_5 = if_else(tas_C >= tbase, tas_C - tbase, 0))
+
+
 
 # get bioclim data
 # 152 files following the pattern /Users/simonemcnamara/budburst/data/ISIMIP3a/CHELSA-W5E5v1.0/chelsa-w5e5v1.0_obsclim_tas_1800arcsec_global_daily_201003.nc
