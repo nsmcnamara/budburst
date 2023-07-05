@@ -8,17 +8,31 @@
 library(tidyverse)
 library(conflicted)
 
+conflicts_prefer(dplyr::filter)
+
 
 #### Data Import ####
 # one file
 chelsa_extracted_1999.12.31_121 <- read.table("~/chelsa_extracted_1999-12-31_121.txt", quote="\"", comment.char="", stringsAsFactors=TRUE)
 
 
+
 #### Data Wrangling ####
+
 # make vector with column names
 col_names <- c("id", "tas", "tasmax", "tasmin", "pr", "rsds", "day", "month", "year", "lat", "lon", "site_name")
 # apply column dames to data frame
 colnames(chelsa_extracted_1999.12.31_121) <- col_names
+
+# drop duplicate rows
+chelsa_extracted_1999.12.31_121 <- chelsa_extracted_1999.12.31_121 %>%
+  distinct(.keep_all = TRUE)
+
+
+chelsa_extracted_1999.12.31_121 %>%
+  group_by(site_name, month) %>%
+  summarise(n = n())
+# somehow 26.1. is missing in this example?
 
 # tas is in kelvin *10, so to get gdd above 5°C need to transform
 # variables
@@ -27,9 +41,18 @@ kelvin <- 273.15
 # base temperature
 tbase <- 5
 
+# calculate gdd_5
 chelsa_extracted_1999.12.31_121 <- chelsa_extracted_1999.12.31_121 %>%
   mutate(tas_C = (tas/10) - kelvin) %>%
   mutate(gdd_5 = if_else(tas_C >= tbase, tas_C - tbase, 0))
+
+# calculate cumulative
+ch <- chelsa_extracted_1999.12.31_121 %>%
+  group_by(site_name, year) %>%
+  arrange(month, day) %>%
+  mutate(cum_gdd_5 = cumsum(gdd_5)) %>%
+  summarise(gdd_120 = max(cum_gdd_5))
+
 
 
 
