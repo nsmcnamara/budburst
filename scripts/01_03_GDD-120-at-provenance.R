@@ -11,24 +11,18 @@
 # make sure you are downloading the correct month or "mean"
 
 #### Setup ####
-# libraries
-library(tidyverse)
-library(sf)
-library(raster)
-library(ncdf4)
+
 
 
 
 #### Data Import ####
-# get coordinates of provenance sites (id, long, lat)
-df_mother_info <- read.csv("~/budburst/data/processed/mother-info.csv") 
+# one file
+chelsa_extracted_1999.12.31_121 <- read.table("~/chelsa_extracted_1999-12-31_121.txt", quote="\"", comment.char="", stringsAsFactors=TRUE)
 
-summary(df_mother_info)
-sapply(df_mother_info, function(x) sum(is.na(x)))
 
-# get unique coordinates
-unique_coordinates <- df_mother_info %>%
-  distinct(site_name, longitude, latitude, .keep_all = FALSE)
+#### Data Wrangling ####
+col_names <- c("id", "tas", "tasmax", "tasmin", "pr", "rsds", "day", "month", "year", "lat", "lon", "site_name")
+
 
 # Kelvin to °C
 kelvin <- 273.15
