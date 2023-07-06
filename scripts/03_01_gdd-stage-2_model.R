@@ -25,6 +25,8 @@ conflicts_prefer(lmerTest::lmer)
 #### Data Import ####
 stage_2_for_analysis <- read.csv("~/budburst/data/processed/stage_2_for_analysis.csv", stringsAsFactors=TRUE)
 chelsa <- read.csv("~/budburst/data/processed/coordinates_chelsa_values.csv", stringsAsFactors = TRUE)
+sumstat_gdd_120 <- read.csv("~/budburst/data/processed/sumstat_gdd-120-1980-2019.csv", stringsAsFactors = TRUE)
+
 
 glimpse(stage_2_for_analysis)
 head(stage_2_for_analysis)
