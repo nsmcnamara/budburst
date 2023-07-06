@@ -86,9 +86,13 @@ tas_to_gdd_5 <- function(df) {
 data_list <- lapply(data_list, tas_to_gdd_5)
 
 
-# Make one single data frame with the entries
-# Extract the site names from the first data frame
-site_names <- data_list[[1]]$site_name
+
+# fix naming
+# get original names from mother-info file
+mother_info <- read.csv("~/budburst/data/processed/mother-info.csv", stringsAsFactors=TRUE)
+site_names <- mother_info %>%
+  distinct(site_name) %>%
+  arrange(site_name)
 
 # Create a data frame with the site names as the first column
 df_gdd_120_1980_2019 <- data.frame(site_name = site_names)
@@ -104,7 +108,6 @@ df_sumstat_gdd120_1980_2019 <- df_gdd_120_1980_2019 %>%
   summarise(site_name = first(site_name),
             mean = mean(c_across(-site_name)),
             sd = sd(c_across(-site_name)))
-
 
 #### Export DF ####
 # export gdd_120
