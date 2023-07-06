@@ -14,6 +14,13 @@ library(MASS)
 library(AICcmodavg)
 library(DHARMa)
 
+# resolve conflicts
+library(conflicted)
+conflicts_prefer(dplyr::filter)
+conflicts_prefer(dplyr::select)
+conflicts_prefer(lmerTest::lmer)
+
+
 
 #### Data Import ####
 stage_2_for_analysis <- read.csv("~/budburst/data/processed/stage_2_for_analysis.csv", stringsAsFactors=TRUE)
