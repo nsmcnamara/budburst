@@ -14,7 +14,7 @@ conflicts_prefer(dplyr::filter)
 #### Data Import ####
 
 # set up base directory and file pattern to import entire folder
-base_dir <- "/Users/simonemcnamara/budburst/data/chelsa/"
+base_dir <- "~/budburst/data/chelsa/"
 file_pattern <- "chelsa_extracted_\\d{4}-\\d{2}-\\d{2}_121.txt"
 
 # Get the list of file paths
@@ -103,7 +103,7 @@ df_sumstat_gdd120_1980_2019 <- df_gdd_120_1980_2019 %>%
   rowwise() %>%
   summarise(site_name = first(site_name),
             mean = mean(c_across(-site_name)),
-            standard_deviation = sd(c_across(-site_name)))
+            sd = sd(c_across(-site_name)))
 
 
 #### Export DF ####
