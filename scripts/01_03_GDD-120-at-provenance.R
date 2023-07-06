@@ -12,27 +12,57 @@ conflicts_prefer(dplyr::filter)
 
 
 #### Data Import ####
-# one file
-chelsa_extracted_1999.12.31_121 <- read.table("~/chelsa_extracted_1999-12-31_121.txt", quote="\"", comment.char="", stringsAsFactors=TRUE)
+
+# set up to import entire folder
+base_dir <- "/Users/simonemcnamara/budburst/data/chelsa/"
+file_pattern <- "chelsa_extracted_\\d{4}-\\d{2}-\\d{2}_121.txt"
+
+# Get the list of file paths
+file_paths <- list.files(path = base_dir, pattern = file_pattern, full.names = TRUE)
+
+# Create an empty list to store the data frames
+data_list <- list()
+
+# create empty vector with years
+years <- vector()
+
+# Iterate over each file path and read into a data frame
+for (file_path in file_paths) {
+  # Extract the year from the file name
+  year <- substr(file_path, nchar(file_path) - 17, nchar(file_path) - 14)
+  # save in vector
+  years[[year]] <- year
+  
+  # Read the file into a data frame
+  data <- read.table(file_path, quote="\"", comment.char="", stringsAsFactors=TRUE)
+  
+  # Store the data frame in the list with the year as the name
+  data_list[[year]] <- data
+}
 
 
 
 #### Data Wrangling ####
+# make vector with years
+
 
 # make vector with column names
 col_names <- c("id", "tas", "tasmax", "tasmin", "pr", "rsds", "day", "month", "year", "lat", "lon", "site_name")
 # apply column dames to data frame
 colnames(chelsa_extracted_1999.12.31_121) <- col_names
 
-# drop duplicate rows
-chelsa_extracted_1999.12.31_121 <- chelsa_extracted_1999.12.31_121 %>%
-  distinct(.keep_all = TRUE)
+# Iterate over each file path and make readable
+for (file_path in file_paths) {
+  # Extract the year from the file name
+  year <- substr(file_path, nchar(file_path) - 17, nchar(file_path) - 14)
+  
+  # Read the file into a data frame
+  data <- read.table(file_path, quote="\"", comment.char="", stringsAsFactors=TRUE)
+  
+  # Store the data frame in the list with the year as the name
+  data_list[[year]] <- data
+}
 
-
-chelsa_extracted_1999.12.31_121 %>%
-  group_by(site_name, month) %>%
-  summarise(n = n())
-# somehow 26.1. is missing in this example?
 
 # tas is in kelvin *10, so to get gdd above 5°C need to transform
 # variables
@@ -53,6 +83,16 @@ ch <- chelsa_extracted_1999.12.31_121 %>%
   mutate(cum_gdd_5 = cumsum(gdd_5)) %>%
   summarise(gdd_120 = max(cum_gdd_5))
 
+# extract year and make this the column name
+ch <- ch %>%
+  rename_with(~as.character(ch$year[1]), .cols = gdd_120) %>%
+  select(!year)
+
+
+
+
+
+
 
 
 
@@ -65,21 +105,6 @@ ch <- chelsa_extracted_1999.12.31_121 %>%
 # do it for one file
 files <- list.files(path = "data/ISIMIP3a/CHELSA-W5E5v1.0", full.names = TRUE)
 stack <- stack(files[49]) 
-
-# extract values for coordinates
-temp_month <- raster::extract(stack, unique_coordinates[2:3])
-
-# convert to °C
-temp_month_celsius <- temp_month - kelvin
-
-# set to 0 if below 5
-temp_month_base <- ifelse(temp_month_celsius < tbase, 0, temp_month_celsius)
-
-# cumulate for month
-temp_month_base_cum <- t(apply(temp_month_base, 1, cumsum))
-
-# save
-write.table(temp_month_base_cum, file="~/chelsa_1991_01.csv", sep=",") 
 
 # do it for one year
 
