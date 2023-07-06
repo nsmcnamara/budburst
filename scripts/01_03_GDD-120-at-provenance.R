@@ -95,8 +95,20 @@ df_gdd_120_1980_2019 <- data.frame(site_name = site_names)
 
 # Bind the columns from each data frame to the combined data frame
 for (df in data_list) {
-  combined_df <- bind_cols(combined_df, df[, -1])
+  df_gdd_120_1980_2019 <- bind_cols(df_gdd_120_1980_2019, df[, -1])
 }
 
+# make df with only mean gdd-120
+df_sumstat_gdd120_1980_2019 <- df_gdd_120_1980_2019 %>%
+  rowwise() %>%
+  summarise(site_name = first(site_name),
+            mean = mean(c_across(-site_name)),
+            standard_deviation = sd(c_across(-site_name)))
 
 
+#### Export DF ####
+# export gdd_120
+write_csv(df_gdd_120_1980_2019, "~/budburst/data/processed/all_gdd-120-1980-2019.csv")
+
+# export sumstats
+write_csv(df_sumstat_gdd120_1980_2019, "~/budburst/data/processed/sumstat_gdd-120-1980-2019.csv")
