@@ -1,6 +1,6 @@
 ### Model for budburst
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-06-19
+### Last update:  2023-07-06
 ### Simone McNamara
 
 
@@ -10,6 +10,9 @@ library(tidyverse)
 library(lme4)
 library(lmerTest)
 library(emmeans)
+library(MASS)
+library(AICcmodavg)
+library(DHARMa)
 
 
 #### Data Import ####
@@ -25,6 +28,7 @@ str(stage_2_for_analysis)
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 
 ## add chelsa to DF
+# drop unnecessary columns
 chelsa <- chelsa %>%
   dplyr::select(- c(Long, Lat, optional))
 
@@ -57,7 +61,6 @@ hist(sqrt(df_s2$altitude)) # alt: sqrt (right-skewed)
 hist(df_s2$latitude) # i think keep
 hist(df_s2$longitude) # i think keep
 hist(log(df_s2$gdd_above_5)) # gdd_above_5: log 
-e1071::skewness(df_s2$temp_ann_mean)
 hist(log(df_s2$temp_ann_mean)) # temp_ann_mean: log
 hist(log(df_s2$precip_ann)) # precip: log
 hist(df_s2$fcf) # i think keep
@@ -286,3 +289,45 @@ plot(q_robur$latitude,q_robur$altitude
 # some kind of site moisture index
 # avg yearly precip from debbie 
 
+
+###### 19.6.2023 ####
+# AIC etc: best model with the smallest value of information criterion
+# backward selection (start w full)
+# forward selection (start w empty)
+df_robur <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano")
+
+# drop columns with na values
+df_robur <- df_robur %>% 
+  select_if(~ !any(is.na(.)))
+
+which(is.na(df_robur), arr.ind=TRUE)
+
+df_robur <- df_robur %>%
+  dplyr::select(!c(species))
+                  
+m_robur_full <- lmer(gdd_above_5_log ~ precip_ann_log * temp_ann_mean_log * gdd5_log * alt_sqrt * ngd5 * kg2 *
+           gst * gsp * gsl * gdgfgd10 * gddlgd10 * gdd10 * precip_seasonality * latitude +
+           (1 | mother_id ) + (1 | year) + (1 | age), data = df_robur)
+
+r.AIC <- stepAIC(m_robur_full, direction = c("backward"), trace = FALSE, AICc = TRUE)
+
+
+#######
+robur_2023_2 <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(site_name != "Bosco_Pantano") %>%
+  filter(cohort == "2023_2") %>%
+  replace(is.na(.), 0) %>%
+  mutate(spring_tempo = gdgfgd10 - gdgfgd5)
+
+
+
+m_robur_2023_2 <- lmer(gdd_above_5 ~ spring_tempo + 
+                         (1 | site_name / mother_id),
+                       data = robur_2023_2)
+summary(m_robur_2023_2)
+
+resid <- simulateResiduals(m_robur_2023_2)
+plot(resid)
