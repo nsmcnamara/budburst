@@ -107,7 +107,7 @@ df_sumstat_gdd120_1980_2019 <- df_gdd_120_1980_2019 %>%
   rowwise() %>%
   summarise(site_name = first(site_name),
             mean = mean(c_across(-site_name)),
-            sd = sd(c_across(-site_name)))
+            var = var(c_across(-site_name)))
 
 #### Export DF ####
 # export gdd_120
@@ -115,3 +115,4 @@ write_csv(df_gdd_120_1980_2019, "~/budburst/data/processed/all_gdd-120-1980-2019
 
 # export sumstats
 write_csv(df_sumstat_gdd120_1980_2019, "~/budburst/data/processed/sumstat_gdd-120-1980-2019.csv")
+
