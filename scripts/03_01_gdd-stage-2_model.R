@@ -1,6 +1,6 @@
 ### Model for budburst
 ### This script is part of the ACORN budburst analysis project
-### Last update:  2023-07-06
+### Last update:  2023-07-07
 ### Simone McNamara
 
 
@@ -28,10 +28,10 @@ chelsa <- read.csv("~/budburst/data/processed/coordinates_chelsa_values.csv", st
 sumstat_gdd_120 <- read.csv("~/budburst/data/processed/sumstat_gdd-120-1980-2019.csv", stringsAsFactors = TRUE)
 
 
-glimpse(stage_2_for_analysis)
-head(stage_2_for_analysis)
-summary(stage_2_for_analysis)
-str(stage_2_for_analysis)
+#glimpse(stage_2_for_analysis)
+#head(stage_2_for_analysis)
+#summary(stage_2_for_analysis)
+#str(stage_2_for_analysis)
 
 ### check NAs
 sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
@@ -39,7 +39,7 @@ sapply(stage_2_for_analysis, function(x) sum(is.na(x)))
 ## add chelsa to DF
 # drop unnecessary columns
 chelsa <- chelsa %>%
-  dplyr::select(- c(Long, Lat, optional))
+  select(- c(Long, Lat, optional))
 
 # rename
 colnames(chelsa) <- gsub("CHELSA_|_1981.2010_V.2.1", "", colnames(chelsa))
@@ -50,6 +50,14 @@ chelsa <- chelsa %>%
 
 
 df_s2 <- left_join(stage_2_for_analysis, chelsa, by = "mother_id")
+
+### add gdd at prov
+df_s2 <- left_join(df_s2, sumstat_gdd_120, by = "site_name")
+
+## don't use 2022: were in fridge and not reliable data in any way 
+df_s2 <- df_s2 %>%
+  filter(!year == "2022")
+
 
 
 ### plot variables and transform if necessary
@@ -111,6 +119,99 @@ df_s2 <- df_s2 %>%
 
 
 #### LMM Robur ####
+## 07.07.
+## Relationship with provenance temp is driven by Bosco Pantano
+
+# minimal model: temperature at provenance
+# with Bosco Pantano
+m_gdd_s2_rob_gddprov <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  lmer(gdd_above_5 ~ mean + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov)
+
+# plot
+df_s2 %>%
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = mean, y = gdd_above_5)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+# without Bosco Pantano
+m_gdd_s2_rob_gddprov_bosco <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ mean + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_bosco)
+
+# plot
+df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = mean, y = gdd_above_5)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+# relationship is inverted but not significant.
+# significant only if Bosco Pantano is in
+
+
+
+## 06.07. now with gdd at prov ###
+m_gdd_s2_rob_gddprov <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  lmer(gdd_above_5 ~ mean +  (1 | mother_id), data = .)
+# w only mean not significant
+# mean and lat both a little significant
+# mean and lat and sd: mean and sd significant
+
+summary(m_gdd_s2_rob_gddprov)
+
+
+df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(cohort == "2023_2") %>%
+  filter(!site_name == "Bosco_Pantano")%>%
+  ggplot(mapping = aes(x = mean, y = gdd_above_5)) +
+  geom_point() +
+  geom_smooth()
+
+df_sumstat_gdd120_1980_2019 %>%
+  ggplot(aes(mean)) +
+  geom_boxplot()
+
+# excluding Bosco Pantano
+m_gdd_s2_rob_gddprov_bosco <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(year == "2023") %>%
+  # filter(!site_name == "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ mean + precip_seasonality + (1|age)+ (1 | mother_id), data = .)
+
+summary(m_gdd_s2_rob_gddprov_bosco)
+
+library(lsr)
+cohensD()
+
+vif(m_gdd_s2_rob_gddprov_bosco)
+df_s2 %>%
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = precip_seasonality, y = gdd_above_5)) +
+  geom_point() +
+  geom_smooth(method=lm)
+
+
+par(mfrow=c(1,1))
+testDispersion(m_gdd_s2_rob_gddprov_bosco)
+simulationOutput <- simulateResiduals(fittedModel = m_gdd_s2_rob_gddprov_bosco, plot = F)
+plot(simulationOutput)
+plotResiduals(simulationOutput)
+
+# Well, the test alerts you to the fact that there are some within-group residual distributions 
+# that are not uniform, i.e. if you plot your residuals for a specific group 
+# (which is the one highlighted in red), they don't look uniform -> 
+# deviate significantly from your model assumptions.
+
+plotResiduals(si)
+m_gdd_s2_rob_gddprov_bosco$residuals[df_s2$site_name=="Altenhof_am_Kamp"]
 
 ### latitude only
 m_gdd_s2_rob_lat <- stage_2_for_analysis %>%
