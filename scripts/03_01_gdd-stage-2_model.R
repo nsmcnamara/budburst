@@ -13,6 +13,7 @@ library(emmeans)
 library(MASS)
 library(AICcmodavg)
 library(DHARMa)
+library(car)
 
 # resolve conflicts
 library(conflicted)
@@ -106,6 +107,7 @@ df_s2 <- df_s2 %>%
   # precipitation at provenance
 # random effects:
   # mother_id 
+  # cohort
 
 # resp ~ FEexpr + (1 | factor 1)
 # global intercept. deviation from intercept for factor 1. global slope for FE
@@ -120,7 +122,7 @@ df_s2 <- df_s2 %>%
 
 #### LMM Robur ####
 ## 07.07.
-## Relationship with provenance temp is driven by Bosco Pantano
+## Relationship with provenance temp and precip_seasonality is driven by Bosco Pantano
 
 # minimal model: temperature at provenance
 # with Bosco Pantano
@@ -136,12 +138,99 @@ df_s2 %>%
   geom_point() +
   geom_smooth(method = lm)
 
+
+### check model assumptions
+
+## Tukey Anscombe
+par(mfrow = c(1,1))
+plot(m_gdd_s2_rob_gddprov)
+
+## QQ plot
+qqnorm(resid(m_gdd_s2_rob_gddprov))
+qqline(resid(m_gdd_s2_rob_gddprov))
+
+## scale-location plot
+plot(m_gdd_s2_rob_gddprov,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+## leverage plot
+plot(m_gdd_s2_rob_gddprov, rstudent(.) ~ hatvalues(.))
+
+
 # without Bosco Pantano
-m_gdd_s2_rob_gddprov_bosco <- df_s2 %>%
+m_gdd_s2_rob_gddprov_b <- df_s2 %>%
   filter(species == "Q.robur") %>%
   filter(!site_name == "Bosco_Pantano") %>%
   lmer(gdd_above_5 ~ mean + (1 | cohort) + (1 | mother_id), data = .)
-summary(m_gdd_s2_rob_gddprov_bosco)
+summary(m_gdd_s2_rob_gddprov_b)
+
+# plot
+df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = mean, y = gdd_above_5)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+## Tukey Anscombe
+par(mfrow = c(1,1))
+plot(m_gdd_s2_rob_gddprov)
+
+## QQ plot
+qqnorm(resid(m_gdd_s2_rob_gddprov))
+qqline(resid(m_gdd_s2_rob_gddprov))
+
+## scale-location plot
+plot(m_gdd_s2_rob_gddprov,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+## leverage plot
+plot(m_gdd_s2_rob_gddprov, rstudent(.) ~ hatvalues(.))
+
+# relationship is inverted but not significant.
+# significant only if Bosco Pantano is in
+
+
+# temperature and latitude
+# neither significant, both with or without Bosco
+# with Bosco Pantano
+m_gdd_s2_rob_gddprov_2 <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  lmer(gdd_above_5 ~ mean + latitude + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_2)
+
+# without Bosco Pantano
+m_gdd_s2_rob_gddprov_2_b <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ mean + latitude + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_2_b)
+
+
+# temp and precipitation
+# again driven by Bosco Pantano
+# with Bosco Pantano
+m_gdd_s2_rob_gddprov_3 <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  lmer(gdd_above_5 ~ mean + precip_seasonality + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_3)
+
+# plot
+df_s2 %>%
+  filter(species == "Q.robur") %>%
+  ggplot(mapping = aes(x = precip_seasonality, y = gdd_above_5)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+
+# without Bosco Pantano
+m_gdd_s2_rob_gddprov_3b <- df_s2 %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ mean + precip_seasonality + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_3b)
 
 # plot
 df_s2 %>%
@@ -155,188 +244,64 @@ df_s2 %>%
 # significant only if Bosco Pantano is in
 
 
-
-## 06.07. now with gdd at prov ###
-m_gdd_s2_rob_gddprov <- df_s2 %>%
+# precipitation only
+# not significant
+m_gdd_s2_rob_gddprov_4 <- df_s2 %>%
   filter(species == "Q.robur") %>%
-  lmer(gdd_above_5 ~ mean +  (1 | mother_id), data = .)
-# w only mean not significant
-# mean and lat both a little significant
-# mean and lat and sd: mean and sd significant
+  lmer(gdd_above_5 ~ precip_seasonality + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_4)
 
-summary(m_gdd_s2_rob_gddprov)
-
-
-df_s2 %>%
-  filter(species == "Q.robur") %>%
-  filter(cohort == "2023_2") %>%
-  filter(!site_name == "Bosco_Pantano")%>%
-  ggplot(mapping = aes(x = mean, y = gdd_above_5)) +
-  geom_point() +
-  geom_smooth()
-
-df_sumstat_gdd120_1980_2019 %>%
-  ggplot(aes(mean)) +
-  geom_boxplot()
-
-# excluding Bosco Pantano
-m_gdd_s2_rob_gddprov_bosco <- df_s2 %>%
-  filter(species == "Q.robur") %>%
-  filter(year == "2023") %>%
-  # filter(!site_name == "Bosco_Pantano") %>%
-  lmer(gdd_above_5 ~ mean + precip_seasonality + (1|age)+ (1 | mother_id), data = .)
-
-summary(m_gdd_s2_rob_gddprov_bosco)
-
-library(lsr)
-cohensD()
-
-vif(m_gdd_s2_rob_gddprov_bosco)
+# plot
 df_s2 %>%
   filter(species == "Q.robur") %>%
   ggplot(mapping = aes(x = precip_seasonality, y = gdd_above_5)) +
   geom_point() +
-  geom_smooth(method=lm)
+  geom_smooth(method = lm)
 
 
-par(mfrow=c(1,1))
-testDispersion(m_gdd_s2_rob_gddprov_bosco)
-simulationOutput <- simulateResiduals(fittedModel = m_gdd_s2_rob_gddprov_bosco, plot = F)
-plot(simulationOutput)
-plotResiduals(simulationOutput)
-
-# Well, the test alerts you to the fact that there are some within-group residual distributions 
-# that are not uniform, i.e. if you plot your residuals for a specific group 
-# (which is the one highlighted in red), they don't look uniform -> 
-# deviate significantly from your model assumptions.
-
-plotResiduals(si)
-m_gdd_s2_rob_gddprov_bosco$residuals[df_s2$site_name=="Altenhof_am_Kamp"]
-
-### latitude only
-m_gdd_s2_rob_lat <- stage_2_for_analysis %>%
+# without Bosco Pantano
+m_gdd_s2_rob_gddprov_4b <- df_s2 %>%
   filter(species == "Q.robur") %>%
-  lmer(gdd_above_5 ~ latitude + (1 | mother_id), data = .)
+  filter(!site_name == "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ precip_seasonality + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_4b)
 
-# summary / anova
-summary(m_gdd_s2_rob_lat)
-# latitude not significant
-# but mother_id explains a fair bit, but a fair bit of variance unexplained
-
-# w/o Bosco
-m_gdd_s2_rob_lat_bosco <- stage_2_for_analysis %>%
+# plot
+df_s2 %>%
   filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  lmer(gdd_above_5 ~ latitude + (1 | mother_id), data = .)
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = precip_seasonality, y = gdd_above_5)) +
+  geom_point() +
+  geom_smooth(method = lm)
 
-summary(m_gdd_s2_rob_lat_bosco)
-# now latitude v. significant
-# mother_id effect less 
 
-### altitude
-m_gdd_s2_rob_alt <- stage_2_for_analysis %>%
+
+# full model with precip, temp and lat
+# again, with Bosco some significant terms, without none
+
+m_gdd_s2_rob_gddprov_5 <- df_s2 %>%
   filter(species == "Q.robur") %>%
-  lmer(gdd_above_5 ~ latitude + (1 | mother_id), data = .)
+  lmer(gdd_above_5 ~ mean + precip_seasonality + latitude + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_5)
 
-# summary / anova
-summary(m_gdd_s2_rob_alt)
-# altitude not significant
-# but mother_id explains a fair bit, but a fair bit of variance unexplained
-
-# w/o Bosco
-m_gdd_s2_rob_alt_bosco <- stage_2_for_analysis %>%
+# without Bosco Pantano
+m_gdd_s2_rob_gddprov_5b <- df_s2 %>%
   filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  lmer(gdd_above_5 ~ altitude + (1 | mother_id), data = .)
-
-summary(m_gdd_s2_rob_alt_bosco)
-# now altitude a little significant
+  filter(!site_name == "Bosco_Pantano") %>%
+  lmer(gdd_above_5 ~ mean + precip_seasonality + latitude + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_gdd_s2_rob_gddprov_5b)
 
 
-### latitude and altitude
-### latitude only
-m_gdd_s2_rob_lat_alt <- stage_2_for_analysis %>%
-  filter(species == "Q.robur") %>%
-  lmer(gdd_above_5 ~ latitude + altitude + (1 | mother_id), data = .)
-
-# summary / anova
-summary(m_gdd_s2_rob_lat_alt)
-# neither significant
-
-# w/o Bosco
-m_gdd_s2_rob_lat_alt_bosco <- stage_2_for_analysis %>%
-  filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  lmer(gdd_above_5 ~ latitude + altitude + (1 | mother_id), data = .)
-
-summary(m_gdd_s2_rob_lat_alt_bosco)
-# now latitude significant, altitude not
-
-### w interaction between latitude and altitude
-m_gdd_s2_rob_lat_alt_bosco <- stage_2_for_analysis %>%
-  filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  mutate(latitude_scaled = scale(latitude),
-         altitude_scaled = scale(altitude)) %>%
-  lmer(gdd_above_5 ~ latitude_scaled * altitude_scaled + (1 | mother_id), data = .)
-
-summary(m_gdd_s2_rob_lat_alt_bosco)
-# latitude significant
-
-## LMM robur lat + climate_zone
-m_gdd_s2_rob_lat_clim_bosco <- df_s2 %>%
-  filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  lmer(gdd_above_5 ~ latitude + climate_zone + altitude + site_wet + (1 | mother_id) + (1 | age) + (1 | year), data =.)
-
-summary(m_gdd_s2_rob_lat_clim_bosco)
-
-## LMM robur lat + climate_zone
-m_gdd_s2_rob_aust_alt_wet <- df_s2 %>%
-  filter(species == "Q.robur") %>%
-  filter(country == "Austria") %>%
-  lmer(gdd_above_5 ~ altitude + site_wet + (1 | mother_id) + (1 | age) + (1 | year), data =.)
-
-summary(m_gdd_s2_rob_aust_alt_wet)
 
 
-### LMM robur with many fun things
-m_gdd_rob_many <- df_s2 %>%
-  filter(species == "Q.robur") %>%
-  filter(site_name != "Bosco_Pantano") %>%
-  lmer(gdd_above_5 ~ latitude + altitude + temp_ann_mean + precip_ann +  
-         (1 | mother_id) + (1 | age) + (1 | year), data = .)
 
 
-summary(m_gdd_rob_many)
-aov <- anova(m_gdd_rob_many, type = "3")
-write.csv(aov, file = "output/tables/aov_rob_many.csv", row.names = TRUE)
 
 
-### check model assumptions
 
-## Tukey Anscombe
-par(mfrow = c(1,1))
-plot(m_gdd_rob_many)
 
-## QQ plot
-qqnorm(resid(m_gdd_rob_many))
-qqline(resid(m_gdd_rob_many))
 
-## scale-location plot
-plot(m_gdd_rob_many,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
 
-## leverage plot
-plot(m_gdd_rob_many, rstudent(.) ~ hatvalues(.))
-performance::check_model(m_gdd_rob_many)
-
-# some kind of tukey test
-emm <- emmeans(m_gdd_rob_many, ~ latitude + altitude + temp_ann_mean + precip_ann)
-summary(emm)
-
-# not sure how to interpret
 
 
 ### Q petraea ###
