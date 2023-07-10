@@ -6,6 +6,7 @@
 #### Setup ####
 # libraries
 library(tidyverse)
+library(plotly)
 
 # resolve conflicts
 library(conflicted)
@@ -79,12 +80,46 @@ hist(log(chlorophyll$mean_gdd_120)) # log
 hist(log(chlorophyll$var_gdd_120)) # log
 
 chlorophyll <- chlorophyll %>%
-  mutate(chl_scale = scale(reading)) %>%
-  mutate(alt_sqrt = scale(sqrt(altitude))) %>%
-  mutate(gdd_above_5_log = scale(log(gdd_above_5))) %>%
-  mutate(temp_ann_mean_log = scale(log(temp_ann_mean))) %>%
-  mutate(precip_ann_log = scale(log(precip_ann))) %>%
-  mutate(gdd5_log = scale(log(gdd5))) %>%
-  mutate(mean_gdd_120_log = scale(log(mean_gdd_120))) %>%
-  mutate(var_gdd_120_log = scale(log(var_gdd_120)))
+  rename(chl_index = reading) %>%
+  mutate(alt_sqrt = sqrt(altitude)) %>%
+  mutate(gdd_above_5_log = log(gdd_above_5)) %>%
+  mutate(temp_ann_mean_log = log(temp_ann_mean)) %>%
+  mutate(precip_ann_log = log(precip_ann)) %>%
+  mutate(gdd5_log = log(gdd5)) %>%
+  mutate(mean_gdd_120_log = log(mean_gdd_120)) %>%
+  mutate(var_gdd_120_log = log(var_gdd_120))
+
+chlorophyll_scaled <- chlorophyll %>%
+  mutate_if(is.numeric, scale)
+
+#### First Data Viz ####
+dev.off()
+
+ggplot(data = chlorophyll, mapping = aes(x = species, y = reading, col = site_name)) +
+  geom_jitter()
+
+c_rob <- chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(age == "2") %>%
+  ggplot(mapping = aes(x = fcf, y = reading, col = site_name)) +
+  geom_jitter(alpha = 0.2) +
+  geom_boxplot()
+
+ggplotly(c_rob)
+
+#### LMM ####
+#### ROBUR ####
+robur <- chlorophyll_scaled %>%
+  filter(species == "Q.robur")
+
+# with Bosco Pantano
+m_chl_rob_0 <- robur %>%
+  lmer(chl_index ~ 0 + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_chl_rob_0)
+
+# plot
+robur %>%
+  ggplot(mapping = aes(x = cohort, y = chl_index)) +
+  geom_point() +
+  geom_smooth(method = lm)
 
