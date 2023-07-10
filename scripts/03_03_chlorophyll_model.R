@@ -28,3 +28,28 @@ stage_2_2023 <- stage_2_for_analysis %>%
   filter(year == "2023")
 # inner join drops where no complete information available 
 chlorophyll <- inner_join(chlorophyll_zh, stage_2_2023, by = "acorn_id")
+
+## add chelsa to DF
+# drop unnecessary columns
+chelsa <- chelsa %>%
+  select(- c(Long, Lat, optional))
+
+# rename
+colnames(chelsa) <- gsub("CHELSA_|_1981.2010_V.2.1", "", colnames(chelsa))
+chelsa <- chelsa %>%
+  rename(temp_ann_mean = bio1) %>%
+  rename(precip_ann = bio12) %>%
+  rename(precip_seasonality = bio15) %>%
+  mutate(kg2 = as.factor(kg2))
+
+# join chelsa
+chlorophyll <- left_join(chlorophyll, chelsa, by = "mother_id")
+
+# add gdd sumstats to DF
+# rename
+sumstat_gdd_120 <- sumstat_gdd_120 %>%
+  rename(mean_gdd_120 = mean) %>%
+  rename(var_gdd_120 = var)
+
+# join
+chlorophyll <- left_join(chlorophyll, sumstat_gdd_120, by = "site_name")
