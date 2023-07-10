@@ -53,3 +53,38 @@ sumstat_gdd_120 <- sumstat_gdd_120 %>%
 
 # join
 chlorophyll <- left_join(chlorophyll, sumstat_gdd_120, by = "site_name")
+
+
+#### Plot variables ####
+numeric_columns <- chlorophyll[ , sapply(chlorophyll, is.numeric)]
+par(mar = c(1, 1, 1, 1))
+par(mfrow = c(4, 6))  # Set up multiple plots in one row
+lapply(colnames(numeric_columns), function(col_name) {
+  hist(numeric_columns[[col_name]], main = col_name, xlab = "Value", ylab = "Frequency")
+})
+
+# transformations
+hist(chlorophyll$reading)
+hist(sqrt(chlorophyll$altitude)) # alt: sqrt (right-skewed)
+hist(chlorophyll$latitude) # i think keep
+hist(chlorophyll$longitude) # i think keep
+hist(log(chlorophyll$gdd_above_5)) # gdd_above_5: log 
+hist(log(chlorophyll$temp_ann_mean)) # temp_ann_mean: log
+hist(log(chlorophyll$precip_ann)) # precip: log
+hist(chlorophyll$fcf) # i think keep
+hist(log(chlorophyll$gdd5)) # gdd5: log
+hist(chlorophyll$gsl) # keep
+hist(chlorophyll$gsp) # keep
+hist(log(chlorophyll$mean_gdd_120)) # log
+hist(log(chlorophyll$var_gdd_120)) # log
+
+chlorophyll <- chlorophyll %>%
+  mutate(chl_scale = scale(reading)) %>%
+  mutate(alt_sqrt = scale(sqrt(altitude))) %>%
+  mutate(gdd_above_5_log = scale(log(gdd_above_5))) %>%
+  mutate(temp_ann_mean_log = scale(log(temp_ann_mean))) %>%
+  mutate(precip_ann_log = scale(log(precip_ann))) %>%
+  mutate(gdd5_log = scale(log(gdd5))) %>%
+  mutate(mean_gdd_120_log = scale(log(mean_gdd_120))) %>%
+  mutate(var_gdd_120_log = scale(log(var_gdd_120)))
+
