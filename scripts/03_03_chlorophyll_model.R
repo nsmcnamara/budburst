@@ -21,3 +21,10 @@ str(chlorophyll_zh)
 
 # check NAs
 sapply(chlorophyll_zh, function(x) sum(is.na(x)))
+
+#### Data Wrangling ####
+# use only 2023 data
+stage_2_2023 <- stage_2_for_analysis %>%
+  filter(year == "2023")
+# inner join drops where no complete information available 
+chlorophyll <- inner_join(chlorophyll_zh, stage_2_2023, by = "acorn_id")
