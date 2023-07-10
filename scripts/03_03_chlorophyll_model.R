@@ -7,9 +7,16 @@
 # libraries
 library(tidyverse)
 library(plotly)
+library(lme4)
+library(lmerTest)
 
 # resolve conflicts
 library(conflicted)
+conflict_scout()
+conflicts_prefer(dplyr::filter)
+conflicts_prefer(dplyr::select)
+conflicts_prefer(lmerTest::lmer)
+conflicts_prefer(lmerTest::step)
 
 
 #### Data Import ####
@@ -101,7 +108,7 @@ ggplot(data = chlorophyll, mapping = aes(x = species, y = reading, col = site_na
 c_rob <- chlorophyll %>%
   filter(species == "Q.robur") %>%
   filter(age == "2") %>%
-  ggplot(mapping = aes(x = fcf, y = reading, col = site_name)) +
+  ggplot(mapping = aes(x = fcf, y = chl_index, col = site_name)) +
   geom_jitter(alpha = 0.2) +
   geom_boxplot()
 
@@ -112,14 +119,31 @@ ggplotly(c_rob)
 robur <- chlorophyll_scaled %>%
   filter(species == "Q.robur")
 
-# with Bosco Pantano
+# plot
+robur %>%
+  filter(cohort == "2023_2") %>%
+  ggplot(mapping = aes(x = mother_id, y = chl_index, col = site_name)) +
+  geom_point() +
+  geom_boxplot() + 
+  facet_wrap(vars(site_name), scales = "free")
+
+# 0 model
 m_chl_rob_0 <- robur %>%
   lmer(chl_index ~ 0 + (1 | cohort) + (1 | mother_id), data = .)
 summary(m_chl_rob_0)
 
-# plot
-robur %>%
-  ggplot(mapping = aes(x = cohort, y = chl_index)) +
-  geom_point() +
-  geom_smooth(method = lm)
+# gdd 120 model 
+m_chl_rob_mean_gdd <- robur %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  lmer(chl_index ~ mean_gdd_120_log + (1 | cohort) + (1 | mother_id), data = .)
+summary(m_chl_rob_mean_gdd)
+
+chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = mean_gdd_120, y = chl_index)) +
+  geom_jitter(aes(col = site_name, alpha = 0.2)) +
+  geom_boxplot(aes(group = site_name, fill = site_name)) +
+  geom_smooth(method = "loess")
+
 
