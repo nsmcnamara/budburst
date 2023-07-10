@@ -33,7 +33,8 @@ sapply(chlorophyll_zh, function(x) sum(is.na(x)))
 #### Data Wrangling ####
 # use only 2023 data
 stage_2_2023 <- stage_2_for_analysis %>%
-  filter(year == "2023")
+  filter(year == "2023") %>%
+  mutate(age = as.factor(age))
 # inner join drops where no complete information available 
 chlorophyll <- inner_join(chlorophyll_zh, stage_2_2023, by = "acorn_id")
 
@@ -102,7 +103,7 @@ chlorophyll_scaled <- chlorophyll %>%
 #### First Data Viz ####
 dev.off()
 
-ggplot(data = chlorophyll, mapping = aes(x = species, y = reading, col = site_name)) +
+ggplot(data = chlorophyll, mapping = aes(x = species, y = chl_index, col = site_name)) +
   geom_jitter()
 
 c_rob <- chlorophyll %>%
@@ -116,26 +117,42 @@ ggplotly(c_rob)
 
 #### LMM ####
 #### ROBUR ####
+# something about Cestas and Laveyron: lighter 
 robur <- chlorophyll_scaled %>%
   filter(species == "Q.robur")
 
 # plot
 robur %>%
   filter(cohort == "2023_2") %>%
-  ggplot(mapping = aes(x = mother_id, y = chl_index, col = site_name)) +
-  geom_point() +
-  geom_boxplot() + 
-  facet_wrap(vars(site_name), scales = "free")
+  ggplot(mapping = aes(x = mother_id, y = chl_index, fill = site_name)) +
+  geom_point(aes(col = site_name, alpha = 0.8)) +
+  geom_boxplot(aes(alpha = 0.7)) + 
+  facet_wrap(vars(site_name), scales = "free_x")
+
+chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(cohort == "2023_2") %>%
+  ggplot(mapping = aes(x = mother_id, y = chl_index, fill = site_name)) +
+  geom_point(aes(col = site_name, alpha = 0.8)) +
+  geom_boxplot(aes(alpha = 0.7)) + 
+  facet_wrap(vars(site_name), scales = "free_x")
+
+chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(cohort == "2023_2") %>%
+  ggplot(mapping = aes(x = site_name, y = chl_index)) +
+  geom_boxplot(aes(fill = site_name, alpha = 0.7))
 
 # 0 model
 m_chl_rob_0 <- robur %>%
-  lmer(chl_index ~ 0 + (1 | cohort) + (1 | mother_id), data = .)
+  lmer(chl_index ~ 0 + (1 | cohort) + (1 | mother_id) + (1 | date), data = .)
 summary(m_chl_rob_0)
+
 
 # gdd 120 model 
 m_chl_rob_mean_gdd <- robur %>%
   filter(!site_name == "Bosco_Pantano") %>%
-  lmer(chl_index ~ mean_gdd_120_log + (1 | cohort) + (1 | mother_id), data = .)
+  lmer(chl_index ~ mean_gdd_120_log + (1 | cohort) + (1 | mother_id) + (1 | date), data = .)
 summary(m_chl_rob_mean_gdd)
 
 chlorophyll %>%
@@ -146,4 +163,70 @@ chlorophyll %>%
   geom_boxplot(aes(group = site_name, fill = site_name)) +
   geom_smooth(method = "loess")
 
+# lat model 
+m_chl_rob_lat <- robur %>%
+  lmer(chl_index ~ latitude + (1 | cohort) + (1 | mother_id) + (1 | date), data = .)
+summary(m_chl_rob_lat)
 
+
+
+chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = latitude, y = chl_index)) +
+  geom_jitter(aes(col = site_name, alpha = 0.2)) +
+  geom_boxplot(aes(group = site_name, fill = site_name)) +
+  geom_smooth(method = "loess")
+
+# altitude model 
+m_chl_rob_alt <- robur %>%
+  lmer(chl_index ~ alt_sqrt + (1 | cohort) + (1 | mother_id) + (1 | date), data = .)
+summary(m_chl_rob_alt)
+
+chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = altitude, y = chl_index)) +
+  geom_jitter(aes(col = site_name, alpha = 0.2)) +
+  geom_boxplot(aes(group = site_name, fill = site_name)) +
+  geom_smooth(method = "loess")
+
+# temp ann mean
+chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = temp_ann_mean, y = chl_index)) +
+  geom_jitter(aes(col = site_name, alpha = 0.2)) +
+  geom_boxplot(aes(group = site_name, fill = site_name)) +
+  geom_smooth(method = "lm")
+
+# precip ann 
+chlorophyll %>%
+  filter(species == "Q.robur") %>%
+  filter(!site_name == "Bosco_Pantano") %>%
+  ggplot(mapping = aes(x = precip_ann, y = chl_index)) +
+  geom_jitter(aes(col = site_name, alpha = 0.2)) +
+  geom_boxplot(aes(group = site_name, fill = site_name)) +
+  geom_smooth(method = "loess")
+
+m_chl_rob_kg2 <- robur %>%
+  lmer(chl_index ~ kg2 + (1 | cohort) + (1 | mother_id) + (1 | date), data = .)
+summary(m_chl_rob_kg2)
+# something about laveyron and cestas but not guca
+
+
+chlorophyll %>%
+  ggplot(mapping = aes(x = species, y = chl_index)) +
+  geom_boxplot(aes(fill = species, alpha = 0.7))
+
+chlorophyll %>%
+  filter(species == "Q.petraea") %>%
+  ggplot(mapping = aes(x = site_name, y = chl_index)) +
+  geom_jitter(aes(col = site_name, alpha = 0.2)) +
+  geom_boxplot(aes(group = site_name, fill = site_name)) +
+  geom_smooth(method = "loess")
+
+m_chl_rob_many <- robur %>%
+  lmer(chl_index ~   mean_gdd_120_log + (1 | cohort) + (1 | mother_id) + (1 | date), data = ., REML=F)
+summary(m_chl_rob_many)
+vif(m_chl_rob_many)
