@@ -18,3 +18,6 @@ sumstat_gdd_120 <- read.csv("~/budburst/data/processed/sumstat_gdd-120-1980-2019
 chlorophyll_zh <- read.csv("~/budburst/data/processed/chlorophyll_zurich-2023.csv", stringsAsFactors = TRUE)
 
 str(chlorophyll_zh)
+
+# check NAs
+sapply(chlorophyll_zh, function(x) sum(is.na(x)))
